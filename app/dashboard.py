@@ -1,16 +1,10 @@
-"""
-Lesson purpose:
-This file is the user interface.
 
-Why?
-Code is useful, but decision-makers need a dashboard.
-Streamlit lets us turn Python analysis into an interactive business product.
-"""
 from __future__ import annotations
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from ai_agent.agent import analyze_ticket
 from kpi_engine import calculate_kpis, agent_performance_summary, issue_type_summary
 from recommendation_engine import generate_recommendations
 from risk_scoring import add_risk_score, top_high_risk_tickets
@@ -31,7 +25,7 @@ df = load_data()
 scored_df = add_risk_score(df)
 st.title("SupportOps Intelligence Platform")
 st.caption("Customer support analytics, SLA monitoring, sentiment analysis, escalation risk scoring, and business recommendations")
-tabs = st.tabs(["Executive Summary", "SLA & Resolution", "Sentiment & Risk", "Agent Performance", "Root Cause & Recommendations", "Raw Data"])
+tabs = st.tabs(["Executive Summary","SLA & Resolution","AI Triage Agent", "SLA & Resolution", "Sentiment & Risk", "Agent Performance", "Root Cause & Recommendations", "Raw Data"])
 with tabs[0]:
     st.subheader("Executive Summary")
     kpis = calculate_kpis(df)
@@ -91,5 +85,50 @@ with tabs[4]:
             st.write(f"**Expected Impact:** {rec['impact']}")
             st.write(f"**Implementation Difficulty:** {rec['difficulty']}")
 with tabs[5]:
+    st.subheader("AI Ticket Triage Agent")
+
+    st.info(
+        "Teacher note: This agent reviews one ticket, checks SLA, sentiment, risk score, "
+        "previous contacts, and customer rating. Then it recommends action, drafts a customer response, "
+        "and shows the agent trace."
+    )
+
+    ticket_options = scored_df["ticket_id"].tolist()
+    selected_ticket_id = st.selectbox("Select a ticket to analyze", ticket_options)
+
+    selected_ticket = scored_df[scored_df["ticket_id"] == selected_ticket_id].iloc[0]
+
+    if st.button("Analyze Ticket"):
+        agent_result = analyze_ticket(selected_ticket)
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Risk Score", f"{agent_result['risk_score']}/100")
+        col2.metric("Risk Level", agent_result["risk_level"])
+        col3.metric("SLA Status", agent_result["sla_status"])
+        col4.metric("Urgency", agent_result["urgency"])
+
+        st.subheader("Recommended Action")
+        st.write(f"**Action Level:** {agent_result['action_level']}")
+        st.write(f"**Recommended Action:** {agent_result['recommended_action']}")
+        st.write(f"**Routing Recommendation:** {agent_result['routing_recommendation']}")
+        st.write(f"**Business Impact:** {agent_result['business_impact']}")
+        st.write(f"**Why this matters:** {agent_result['business_reason']}")
+
+        st.subheader("Why This Ticket Is Risky")
+        for factor in agent_result["risk_factors"]:
+            st.write(f"- {factor}")
+
+        st.subheader("Internal Manager Note")
+        st.write(agent_result["internal_manager_note"])
+
+        st.subheader("Customer Response Draft")
+        st.write(agent_result["customer_response_draft"])
+
+        st.subheader("Agent Trace")
+        for step in agent_result["agent_trace"]:
+            st.write(f"✅ {step}")
+
+
+with tabs[6]:
     st.subheader("Raw Ticket Data")
     st.dataframe(scored_df, use_container_width=True)
