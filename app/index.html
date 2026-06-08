@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpsIntel AI Design System Demo</title>
+  <link rel="stylesheet" href="./css/tokens.css" />
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/utilities.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="top-nav">
+      <div class="container-wide flex items-center justify-between">
+        <a href="#" class="brand" aria-label="OpsIntel AI home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>OpsIntel AI</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Main navigation">
+          <a class="nav-link nav-link-active" href="#">Product</a>
+          <a class="nav-link" href="#features">Features</a>
+          <a class="nav-link" href="#pricing">Pricing</a>
+          <a class="nav-link" href="#dashboard">Dashboard</a>
+        </nav>
+
+        <div class="flex gap-2">
+          <a class="btn btn-ghost" href="#">Sign in</a>
+          <a class="btn btn-primary" href="#">Book demo</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero -->
+      <section class="container-wide hero">
+        <div class="hero-content">
+          <span class="badge badge-primary">Operations intelligence platform</span>
+          <h1 class="hero-title">Turn operational data into calm, confident decisions.</h1>
+          <p class="hero-copy">
+            A classy SaaS design system for applications that analyze support operations,
+            cost performance, and hiring workflows without visual noise.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#pricing">Start free</a>
+            <a class="btn btn-secondary btn-lg" href="#dashboard">View dashboard</a>
+          </div>
+        </div>
+
+        <div class="dashboard-shell">
+          <div class="dashboard-shell-header">
+            <div>
+              <p class="uppercase-label text-secondary">Executive overview</p>
+              <h3 class="mt-1">Operational health</h3>
+            </div>
+            <span class="badge badge-accent">Live preview</span>
+          </div>
+          <div class="dashboard-shell-body">
+            <div class="dashboard-grid">
+              <div class="card">
+                <div class="metric">
+                  <span class="metric-label">SLA risk</span>
+                  <strong class="metric-value">12.8%</strong>
+                  <span class="metric-delta">↓ 3.2%</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="metric">
+                  <span class="metric-label">Cost variance</span>
+                  <strong class="metric-value">$42k</strong>
+                  <span class="metric-delta">Potential savings</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="metric">
+                  <span class="metric-label">Match score</span>
+                  <strong class="metric-value">86</strong>
+                  <span class="metric-delta">Strong fit</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="metric">
+                  <span class="metric-label">Reports</span>
+                  <strong class="metric-value">18</strong>
+                  <span class="metric-delta">Generated</span>
+                </div>
+              </div>
+            </div>
+            <div class="chart-placeholder" aria-label="Dashboard chart placeholder"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="section-sm">
+        <div class="container-wide">
+          <div class="max-w-lg mb-6">
+            <p class="uppercase-label text-brand">Features</p>
+            <h2 class="mt-2">Designed for polished SaaS workflows.</h2>
+            <p class="mt-3">
+              Components are restrained, reusable, accessible, and ready for analytics-heavy products.
+            </p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="card card-clickable">
+              <div class="feature-item">
+                <div class="feature-icon">01</div>
+                <div>
+                  <h3 class="card-title">SupportOps Analyzer</h3>
+                  <p class="card-description">Track SLA risk, escalation pressure, customer sentiment, and manager-ready actions.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="card card-clickable">
+              <div class="feature-item">
+                <div class="feature-icon">02</div>
+                <div>
+                  <h3 class="card-title">CostOps Analyzer</h3>
+                  <p class="card-description">Identify spend variance, cost anomalies, vendor concentration, and savings opportunities.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="card card-clickable">
+              <div class="feature-item">
+                <div class="feature-icon">03</div>
+                <div>
+                  <h3 class="card-title">NextHire AI</h3>
+                  <p class="card-description">Compare resumes with job descriptions and generate skill-gap recommendations.</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing Cards -->
+      <section id="pricing" class="section-sm">
+        <div class="container-wide">
+          <div class="max-w-lg mb-6">
+            <p class="uppercase-label text-brand">Pricing</p>
+            <h2 class="mt-2">Simple tiers for growing teams.</h2>
+            <p class="mt-3">Use the same card and button system for clean pricing pages.</p>
+          </div>
+
+          <div class="pricing-grid">
+            <article class="card card-spacious">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Starter</h3>
+                  <p class="card-description">For personal projects and early demos.</p>
+                </div>
+                <span class="badge badge-accent">Solo</span>
+              </div>
+              <div class="price">
+                <span class="price-value">$0</span>
+                <span class="price-period">/mo</span>
+              </div>
+              <hr class="my-rule mt-6 mb-6" />
+              <div class="grid gap-3 text-sm text-secondary">
+                <p>1 workspace</p>
+                <p>CSV uploads</p>
+                <p>Basic reports</p>
+              </div>
+              <div class="card-footer">
+                <a class="btn btn-secondary btn-block" href="#">Choose Starter</a>
+              </div>
+            </article>
+
+            <article class="card card-spacious">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Team</h3>
+                  <p class="card-description">For small teams reviewing operations data.</p>
+                </div>
+                <span class="badge badge-primary">Popular</span>
+              </div>
+              <div class="price">
+                <span class="price-value">$49</span>
+                <span class="price-period">/mo</span>
+              </div>
+              <hr class="my-rule mt-6 mb-6" />
+              <div class="grid gap-3 text-sm text-secondary">
+                <p>3 workspaces</p>
+                <p>Advanced analytics</p>
+                <p>Downloadable manager reports</p>
+              </div>
+              <div class="card-footer">
+                <a class="btn btn-primary btn-block" href="#">Choose Team</a>
+              </div>
+            </article>
+
+            <article class="card card-spacious">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Business</h3>
+                  <p class="card-description">For teams needing governance and scale.</p>
+                </div>
+                <span class="badge badge-warning">Scale</span>
+              </div>
+              <div class="price">
+                <span class="price-value">$149</span>
+                <span class="price-period">/mo</span>
+              </div>
+              <hr class="my-rule mt-6 mb-6" />
+              <div class="grid gap-3 text-sm text-secondary">
+                <p>Unlimited workspaces</p>
+                <p>Role-based workflows</p>
+                <p>Priority support</p>
+              </div>
+              <div class="card-footer">
+                <a class="btn btn-secondary btn-block" href="#">Contact sales</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Layout Snippet -->
+      <section id="dashboard" class="section-sm">
+        <div class="container-wide">
+          <div class="max-w-lg mb-6">
+            <p class="uppercase-label text-brand">Dashboard layout</p>
+            <h2 class="mt-2">A clean app shell for analytics products.</h2>
+            <p class="mt-3">Sidebar, top header, metric cards, chart placeholder, and a reusable table.</p>
+          </div>
+
+          <div class="dashboard-shell">
+            <div class="app-layout" style="min-height: 36rem;">
+              <aside class="sidebar">
+                <nav class="sidebar-nav" aria-label="Sidebar navigation">
+                  <a class="sidebar-item sidebar-item-active" href="#"><span class="sidebar-icon">◆</span> Overview</a>
+                  <a class="sidebar-item" href="#"><span class="sidebar-icon">◇</span> SupportOps</a>
+                  <a class="sidebar-item" href="#"><span class="sidebar-icon">◇</span> CostOps</a>
+                  <a class="sidebar-item" href="#"><span class="sidebar-icon">◇</span> NextHire AI</a>
+                  <a class="sidebar-item" href="#"><span class="sidebar-icon">◇</span> Reports</a>
+                </nav>
+              </aside>
+
+              <div class="main">
+                <div class="main-header">
+                  <div class="flex items-center justify-between p-4">
+                    <div>
+                      <p class="uppercase-label text-secondary">Workspace</p>
+                      <h3 class="mt-1">Executive dashboard</h3>
+                    </div>
+                    <button class="btn btn-primary">Export report</button>
+                  </div>
+                </div>
+
+                <div class="main-content">
+                  <div class="dashboard-grid mb-6">
+                    <div class="card">
+                      <div class="metric">
+                        <span class="metric-label">Tickets</span>
+                        <strong class="metric-value">3,284</strong>
+                        <span class="metric-delta">+8.1%</span>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="metric">
+                        <span class="metric-label">Savings</span>
+                        <strong class="metric-value">$84k</strong>
+                        <span class="metric-delta">Identified</span>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="metric">
+                        <span class="metric-label">Candidates</span>
+                        <strong class="metric-value">128</strong>
+                        <span class="metric-delta">Scored</span>
+                      </div>
+                    </div>
+                    <div class="card">
+                      <div class="metric">
+                        <span class="metric-label">Actions</span>
+                        <strong class="metric-value">42</strong>
+                        <span class="metric-delta">Open</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid-2">
+                    <div class="card card-spacious">
+                      <div class="card-header">
+                        <div>
+                          <h3 class="card-title">Risk trend</h3>
+                          <p class="card-description">Muted chart surface for analytics.</p>
+                        </div>
+                        <span class="badge badge-primary">Weekly</span>
+                      </div>
+                      <div class="chart-placeholder"></div>
+                    </div>
+
+                    <div class="card card-spacious">
+                      <div class="card-header">
+                        <div>
+                          <h3 class="card-title">Recent recommendations</h3>
+                          <p class="card-description">Action-oriented list layout.</p>
+                        </div>
+                      </div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Area</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Review cloud variance</td>
+                            <td><span class="badge badge-warning">Open</span></td>
+                          </tr>
+                          <tr>
+                            <td>Escalate high-risk tickets</td>
+                            <td><span class="badge badge-danger">Urgent</span></td>
+                          </tr>
+                          <tr>
+                            <td>Update resume keywords</td>
+                            <td><span class="badge badge-success">Ready</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
