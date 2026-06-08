@@ -17,7 +17,17 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import sys
 from collections import Counter
+
+# Make project root available for imports on Streamlit Cloud.
+# This lets app/dashboard.py import folders that sit beside app/, such as ai_agent/.
+ROOT_DIR = Path(__file__).resolve().parents[1]
+APP_DIR = Path(__file__).resolve().parent
+
+for path in (ROOT_DIR, APP_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 import pandas as pd
 import plotly.express as px
