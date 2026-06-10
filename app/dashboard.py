@@ -14,21 +14,18 @@ Replace your existing app/dashboard.py with this file.
 """
 
 from __future__ import annotations
-
 from pathlib import Path
+import json
+import os
 import re
 import sys
 from collections import Counter
 
-# Make project root available for imports on Streamlit Cloud.
-# This lets app/dashboard.py import folders that sit beside app/, such as ai_agent/.
+from google import genai
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
-APP_DIR = Path(__file__).resolve().parent
-
-for path in (ROOT_DIR, APP_DIR):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -515,7 +512,14 @@ def load_css() -> None:
         [data-testid="stMetric"] label {
             color: var(--color-text-secondary);
         }
+[data-testid="stMetricValue"] {
+    color: var(--color-primary) !important;
+    font-weight: 650 !important;
+}
 
+[data-testid="stMetricValue"] div {
+    color: var(--color-primary) !important;
+}
         .stTabs [data-baseweb="tab-list"] {
             gap: 0.35rem;
             border-bottom: 1px solid var(--color-border);
@@ -647,7 +651,7 @@ def render_footer() -> None:
                     <b>Built With</b><br>
                     Python • Pandas • Streamlit<br>
                     Plotly charts<br>
-                    Rule-based AI agents
+                    Gemini LLM agents with rule-based fallback
                 </div>
             </div>
             <div class="footer-line">
@@ -860,7 +864,123 @@ def analyze_resume_match(resume_text: str, jd_text: str):
     score = int(round((len(matched) / max(len(jd_keywords), 1)) * 100))
     return score, matched, missing
 
+def _extract_json_response(text: str) -> dict:
+    """Extract JSON safely from a Gemini response."""
+    if not text:
+        raise ValueError("Empty Gemini response")
 
+    cleaned = text.strip()
+    cleaned = re.sub(r"^```json", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"^```", "", cleaned).strip()
+    cleaned = re.sub(r"```$", "", cleaned).strip()
+
+    json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if not json_match:
+        raise ValueError("No JSON object found in Gemini response")
+
+    return json.loads(json_match.group(0))
+
+
+def generate_nexthire_ai_feedback(
+    resume_text: str,
+    jd_text: str,
+    score: int,
+    matched: list[str],
+    missing: list[str],
+) -> dict:
+    """
+    Generate real AI resume feedback using Gemini.
+    Falls back to keyword-based feedback if Gemini is unavailable.
+    """
+    fallback = {
+        "overall_feedback": (
+            f"The resume has a {score}/100 keyword match with the job description. "
+            "It shows some relevant experience, but the resume should better align achievements, tools, and business impact with the target role."
+        ),
+        "strengths": matched[:8],
+        "gaps": missing[:8],
+        "resume_improvements": [
+            "Add missing job keywords naturally into experience bullets.",
+            "Show measurable outcomes such as time saved, cost reduced, improved accuracy, or automated reporting.",
+            "Add a stronger technical skills section aligned with the job description.",
+            "Include one project bullet showing end-to-end analysis from raw data to recommendation.",
+            "Use stakeholder-facing language such as requirements gathering, documentation, KPI reporting, and process improvement.",
+        ],
+        "interview_questions": [
+            "Tell me about a time you improved a business process.",
+            "How do you gather and document requirements from stakeholders?",
+            "How would you analyze SLA or cost performance data?",
+            "What dashboards or reports have you built?",
+            "How do you explain technical findings to non-technical users?",
+        ],
+        "agent_trace": [
+            "Generated fallback keyword-based NextHire feedback.",
+        ],
+    }
+
+    if not os.getenv("GEMINI_API_KEY"):
+        fallback["agent_trace"].append("GEMINI_API_KEY not found. Used fallback mode.")
+        return fallback
+
+    prompt = f"""
+You are an expert resume coach and business analyst hiring advisor.
+
+Analyze the resume against the job description.
+Return ONLY valid JSON.
+Do not include markdown.
+Do not include explanations outside JSON.
+
+Use this exact JSON schema:
+
+{{
+  "overall_feedback": "clear coaching summary",
+  "strengths": ["strength 1", "strength 2", "strength 3"],
+  "gaps": ["gap 1", "gap 2", "gap 3"],
+  "resume_improvements": ["improvement 1", "improvement 2", "improvement 3", "improvement 4", "improvement 5"],
+  "interview_questions": ["question 1", "question 2", "question 3", "question 4", "question 5"],
+  "agent_trace": ["step 1", "step 2", "step 3"]
+}}
+
+Rules:
+- Be honest but helpful.
+- Do not invent experience that is not in the resume.
+- Focus on business analyst, operations analyst, data analyst, implementation, and project-oriented roles.
+- Give practical resume coaching.
+- Make the feedback recruiter-oriented.
+- Return only valid JSON.
+
+Keyword score: {score}/100
+
+Matched keywords:
+{matched}
+
+Missing keywords:
+{missing}
+
+Resume:
+{resume_text}
+
+Job description:
+{jd_text}
+"""
+
+    try:
+        client = genai.Client()
+        model = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+        )
+
+        result = _extract_json_response(response.text)
+        result["agent_trace"] = result.get("agent_trace", [])
+        result["agent_trace"].append(f"Gemini NextHire feedback completed using {model}.")
+        return result
+
+    except Exception as error:
+        fallback["agent_trace"].append(f"Gemini NextHire feedback failed. Fallback used. Error: {error}")
+        return fallback
 def generate_nexthire_report(score: int, matched: list[str], missing: list[str]) -> str:
     """Generate a candidate readiness report."""
     return f"""OpsIntel AI - NextHire Candidate Report
@@ -1184,7 +1304,6 @@ def render_supportops_page() -> None:
                 st.subheader("Agent Trace")
                 for step in agent_result["agent_trace"]:
                     st.write(f"✅ {step}")
-
         with agent_subtabs[1]:
             st.subheader("Daily SupportOps AI Briefing")
             briefing = generate_daily_briefing(scored_df)
@@ -1196,6 +1315,7 @@ def render_supportops_page() -> None:
                 st.write(briefing["briefing_sections"]["sla_risk"])
                 st.markdown("### Customer Sentiment Risk")
                 st.write(briefing["briefing_sections"]["customer_sentiment_risk"])
+
             with col2:
                 st.markdown("### Top Issue Risk")
                 st.write(briefing["briefing_sections"]["top_issue_risk"])
@@ -1205,6 +1325,10 @@ def render_supportops_page() -> None:
             st.subheader("Recommended Actions")
             for idx, action in enumerate(briefing["recommended_actions"], start=1):
                 st.write(f"{idx}. {action}")
+
+            st.subheader("Agent Trace")
+            for step in briefing.get("agent_trace", []):
+                st.write(f"✅ {step}")
 
         with agent_subtabs[2]:
             st.subheader("Agent Performance")
@@ -1306,8 +1430,6 @@ def render_costops_page() -> None:
 
     with tabs[3]:
         st.dataframe(df, use_container_width=True)
-
-
 def render_nexthire_page() -> None:
     """Render NextHire AI."""
     render_module_header(
@@ -1328,6 +1450,21 @@ def render_nexthire_page() -> None:
 
     score, matched, missing = analyze_resume_match(resume_text, jd_text)
 
+    if "nexthire_ai_feedback" not in st.session_state:
+        st.session_state["nexthire_ai_feedback"] = None
+
+    if st.button("Generate Gemini Resume Coaching", use_container_width=True):
+        with st.spinner("Gemini is analyzing the resume and job description..."):
+            st.session_state["nexthire_ai_feedback"] = generate_nexthire_ai_feedback(
+                resume_text,
+                jd_text,
+                score,
+                matched,
+                missing,
+            )
+
+    ai_feedback = st.session_state.get("nexthire_ai_feedback")
+
     c1, c2, c3 = st.columns(3)
     c1.metric("Resume-JD Match Score", f"{score}/100")
     c2.metric("Matched Keywords", len(matched))
@@ -1344,38 +1481,91 @@ def render_nexthire_page() -> None:
             st.subheader("Missing / Weak Keywords")
             st.write(", ".join(missing[:30]) if missing else "No major missing keywords found.")
 
-        chart_df = pd.DataFrame({"category": ["Matched", "Missing"], "count": [len(matched), len(missing)]})
-        fig = px.bar(chart_df, x="category", y="count", title="Resume Keyword Coverage", text="count")
+        chart_df = pd.DataFrame(
+            {
+                "category": ["Matched", "Missing"],
+                "count": [len(matched), len(missing)],
+            }
+        )
+        fig = px.bar(
+            chart_df,
+            x="category",
+            y="count",
+            title="Resume Keyword Coverage",
+            text="count",
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     with tabs[1]:
-        st.subheader("Resume Improvement Suggestions")
-        suggestions = [
-            "Add missing job keywords naturally into experience bullets.",
-            "Use measurable outcomes such as reduced time, improved accuracy, automated reports, or cost savings.",
-            "Add a technical skills section with SQL, Python, Excel, BI tools, and dashboarding tools.",
-            "Show one end-to-end analytics project from raw data to recommendation.",
-            "Add stakeholder-facing language: requirements gathering, documentation, process improvement, KPI reporting.",
-        ]
-        for idx, suggestion in enumerate(suggestions, start=1):
-            st.write(f"{idx}. {suggestion}")
+        st.subheader("Gemini Resume Coaching")
+
+        if ai_feedback:
+            st.markdown("### Overall Feedback")
+            st.write(ai_feedback["overall_feedback"])
+
+            st.markdown("### Strengths")
+            for item in ai_feedback.get("strengths", []):
+                st.write(f"✅ {item}")
+
+            st.markdown("### Gaps")
+            for item in ai_feedback.get("gaps", []):
+                st.write(f"⚠️ {item}")
+
+            st.markdown("### Resume Improvements")
+            for idx, suggestion in enumerate(ai_feedback.get("resume_improvements", []), start=1):
+                st.write(f"{idx}. {suggestion}")
+
+            st.markdown("### Agent Trace")
+            for step in ai_feedback.get("agent_trace", []):
+                st.write(f"✅ {step}")
+        else:
+            st.info("Click **Generate Gemini Resume Coaching** above to get AI-powered resume feedback.")
 
     with tabs[2]:
         st.subheader("Interview Prep Questions")
-        questions = [
-            "Tell me about a time you improved a business process.",
-            "How do you gather and document requirements from stakeholders?",
-            "How would you analyze SLA or cost performance data?",
-            "What dashboards or reports have you built?",
-            "How do you explain technical findings to non-technical users?",
-            "What would you do if stakeholders disagree on requirements?",
-        ]
-        for idx, question in enumerate(questions, start=1):
-            st.write(f"{idx}. {question}")
 
+        if ai_feedback:
+            for idx, question in enumerate(ai_feedback.get("interview_questions", []), start=1):
+                st.write(f"{idx}. {question}")
+        else:
+            questions = [
+                "Tell me about a time you improved a business process.",
+                "How do you gather and document requirements from stakeholders?",
+                "How would you analyze SLA or cost performance data?",
+                "What dashboards or reports have you built?",
+                "How do you explain technical findings to non-technical users?",
+                "What would you do if stakeholders disagree on requirements?",
+            ]
+            for idx, question in enumerate(questions, start=1):
+                st.write(f"{idx}. {question}")
     with tabs[3]:
-        report = generate_nexthire_report(score, matched, missing)
-        st.text_area("Candidate Report Preview", report, height=360)
+        if ai_feedback:
+            report = f"""OpsIntel AI - NextHire Gemini Candidate Report
+
+Resume-Job Match Score: {score}/100
+
+Overall Feedback:
+{ai_feedback["overall_feedback"]}
+
+Strengths:
+{chr(10).join([f"- {item}" for item in ai_feedback.get("strengths", [])])}
+
+Gaps:
+{chr(10).join([f"- {item}" for item in ai_feedback.get("gaps", [])])}
+
+Recommended Resume Improvements:
+{chr(10).join([f"{idx}. {item}" for idx, item in enumerate(ai_feedback.get("resume_improvements", []), start=1)])}
+
+Interview Prep Questions:
+{chr(10).join([f"{idx}. {item}" for idx, item in enumerate(ai_feedback.get("interview_questions", []), start=1)])}
+
+Agent Trace:
+{chr(10).join([f"- {item}" for item in ai_feedback.get("agent_trace", [])])}
+"""
+        else:
+            report = generate_nexthire_report(score, matched, missing)
+
+        st.text_area("Candidate Report Preview", report, height=420)
         st.download_button(
             "Download NextHire Candidate Report",
             data=report,
@@ -1383,7 +1573,7 @@ def render_nexthire_page() -> None:
             mime="text/plain",
             use_container_width=True,
         )
-
+    
 
 # =============================================================================
 # MAIN APP

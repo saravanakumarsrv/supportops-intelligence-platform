@@ -2,11 +2,21 @@
 Daily Support Briefing Agent
 
 This agent analyzes the full support queue and generates a manager-ready briefing.
+
+Upgrade:
+- Uses Google Gemini when GEMINI_API_KEY is available
+- Falls back to the original rule-based briefing if Gemini is unavailable
+- Keeps the same output structure expected by the Streamlit dashboard
 """
 
 from __future__ import annotations
 
+import json
+import os
+import re
+
 import pandas as pd
+from google import genai
 
 from kpi_engine import calculate_kpis, agent_performance_summary, issue_type_summary
 from risk_scoring import add_risk_score, top_high_risk_tickets
@@ -14,10 +24,33 @@ from root_cause_analyzer import top_pain_points
 from sla_analyzer import sla_summary_by_department
 
 
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+
+
 def _safe_first_value(df: pd.DataFrame, column: str, default="N/A"):
     if df.empty or column not in df.columns:
         return default
     return df.iloc[0][column]
+
+
+def extract_json(text: str) -> dict:
+    """
+    Extract JSON safely from Gemini response.
+    Handles plain JSON and JSON inside code blocks.
+    """
+    if not text:
+        raise ValueError("Empty Gemini response")
+
+    cleaned = text.strip()
+    cleaned = re.sub(r"^```json", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"^```", "", cleaned).strip()
+    cleaned = re.sub(r"```$", "", cleaned).strip()
+
+    json_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if not json_match:
+        raise ValueError("No JSON object found in Gemini response")
+
+    return json.loads(json_match.group(0))
 
 
 def identify_overloaded_agents(df: pd.DataFrame) -> pd.DataFrame:
@@ -51,8 +84,8 @@ def identify_overloaded_agents(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def generate_daily_briefing(df: pd.DataFrame) -> dict:
-    """Generate a manager-ready daily support operations briefing."""
+def fallback_generate_daily_briefing(df: pd.DataFrame) -> dict:
+    """Generate the original rule-based manager briefing."""
     scored_df = add_risk_score(df)
     kpis = calculate_kpis(df)
     dept_sla = sla_summary_by_department(df)
@@ -69,7 +102,9 @@ def generate_daily_briefing(df: pd.DataFrame) -> dict:
 
     high_risk_count = int(scored_df["risk_level"].eq("High").sum())
     breached_count = int(scored_df["sla_breached"].sum())
-    negative_count = int(scored_df["sentiment"].isin(["Negative", "Very Negative"]).sum())
+    negative_count = int(
+        scored_df["sentiment"].isin(["Negative", "Very Negative"]).sum()
+    )
 
     briefing_sections = {
         "executive_summary": (
@@ -129,7 +164,7 @@ def generate_daily_briefing(df: pd.DataFrame) -> dict:
         "Identified top high-risk tickets",
         "Identified overloaded agents",
         "Identified root-cause pain points",
-        "Generated manager-ready daily action plan",
+        "Generated rule-based manager briefing",
     ]
 
     return {
@@ -141,6 +176,112 @@ def generate_daily_briefing(df: pd.DataFrame) -> dict:
         "overloaded_agents": overloaded_agents,
         "agent_trace": agent_trace,
     }
+
+
+def build_briefing_prompt(baseline: dict) -> str:
+    """Build Gemini prompt for manager briefing."""
+    kpis = baseline["kpis"]
+    sections = baseline["briefing_sections"]
+    actions = baseline["recommended_actions"]
+
+    prompt_payload = {
+        "kpis": kpis,
+        "baseline_sections": sections,
+        "baseline_recommended_actions": actions,
+    }
+
+    return f"""
+You are an expert Support Operations Manager.
+
+Write a professional daily support operations briefing for a manager.
+Use the KPI data and baseline analysis below.
+
+Return ONLY valid JSON.
+Do not include markdown.
+Do not include explanations outside JSON.
+
+Your JSON must use this exact schema:
+
+{{
+  "briefing_sections": {{
+    "executive_summary": "manager-ready executive summary",
+    "sla_risk": "SLA risk analysis",
+    "customer_sentiment_risk": "customer sentiment risk analysis",
+    "top_issue_risk": "top issue/root-cause risk analysis",
+    "workload_risk": "agent workload risk analysis"
+  }},
+  "recommended_actions": [
+    "specific action 1",
+    "specific action 2",
+    "specific action 3"
+  ],
+  "agent_trace": [
+    "step 1",
+    "step 2",
+    "step 3"
+  ]
+}}
+
+Rules:
+- Keep the writing concise, professional, and manager-ready.
+- Do not invent new KPI numbers.
+- Use the provided KPI values only.
+- Make the recommended actions practical and business-focused.
+- Return only valid JSON.
+
+Data:
+{json.dumps(prompt_payload, indent=2, default=str)}
+"""
+
+
+def generate_daily_briefing(df: pd.DataFrame) -> dict:
+    """
+    Generate a manager-ready daily support operations briefing.
+
+    Uses Gemini when GEMINI_API_KEY is available.
+    Falls back to rule-based briefing if Gemini fails.
+    """
+    baseline = fallback_generate_daily_briefing(df)
+
+    if not os.getenv("GEMINI_API_KEY"):
+        baseline["agent_trace"].append("GEMINI_API_KEY not found. Used fallback briefing mode.")
+        return baseline
+
+    try:
+        client = genai.Client()
+        prompt = build_briefing_prompt(baseline)
+
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
+
+        llm_result = extract_json(response.text)
+
+        baseline["briefing_sections"] = llm_result.get(
+            "briefing_sections",
+            baseline["briefing_sections"],
+        )
+        baseline["recommended_actions"] = llm_result.get(
+            "recommended_actions",
+            baseline["recommended_actions"],
+        )
+        baseline["agent_trace"] = llm_result.get(
+            "agent_trace",
+            baseline["agent_trace"],
+        )
+
+        baseline["agent_trace"].append(
+            f"Gemini LLM briefing completed using {GEMINI_MODEL}."
+        )
+
+        return baseline
+
+    except Exception as error:
+        baseline["agent_trace"].append(
+            f"Gemini briefing failed. Fallback used. Error: {error}"
+        )
+        return baseline
 
 
 def generate_briefing_text(df: pd.DataFrame) -> str:
