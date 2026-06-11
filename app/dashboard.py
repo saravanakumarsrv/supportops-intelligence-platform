@@ -29,6 +29,7 @@ if str(ROOT_DIR) not in sys.path:
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 
 from ai_agent.agent import analyze_ticket
 from ai_agent.briefing_agent import generate_daily_briefing, generate_briefing_text
@@ -83,7 +84,7 @@ def enable_support_demo() -> None:
 # EMBEDDED PROFESSIONAL CSS
 # =============================================================================
 def load_css() -> None:
-    """Load professional SaaS-style CSS directly from this dashboard file."""
+    """Load premium homepage/navigation CSS directly from this dashboard file."""
     st.markdown(
         """
         <style>
@@ -92,8 +93,14 @@ def load_css() -> None:
             --color-primary-hover: #35327a;
             --color-primary-active: #2f2c6d;
             --color-primary-subtle: rgba(61, 58, 140, 0.08);
+            --color-primary-soft: #efeff9;
+
             --color-accent: #8faf9b;
             --color-accent-subtle: rgba(143, 175, 155, 0.16);
+            --color-amber: #9a7435;
+            --color-amber-bg: #fbf4e8;
+            --color-rose: #9b4a4a;
+            --color-rose-bg: #fbeeee;
 
             --color-bg: #fafaf9;
             --color-bg-soft: #f9f8f6;
@@ -122,6 +129,7 @@ def load_css() -> None:
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 22px;
+            --radius-2xl: 30px;
             --radius-full: 999px;
 
             --shadow-xs: 0 1px 2px rgba(28, 28, 26, 0.04);
@@ -143,16 +151,16 @@ def load_css() -> None:
         body,
         [data-testid="stAppViewContainer"] {
             background:
-                radial-gradient(circle at top left, rgba(61, 58, 140, 0.08), transparent 30%),
-                radial-gradient(circle at top right, rgba(143, 175, 155, 0.10), transparent 28%),
+                radial-gradient(circle at top left, rgba(61, 58, 140, 0.075), transparent 30%),
+                radial-gradient(circle at top right, rgba(143, 175, 155, 0.11), transparent 28%),
                 linear-gradient(180deg, #ffffff 0%, #fafaf9 42%, #f3f1ec 100%);
             color: var(--color-text-primary);
             font-family: var(--font-sans);
         }
 
         .block-container {
-            max-width: 1220px;
-            padding-top: 0.75rem;
+            max-width: 1240px;
+            padding-top: 0.65rem;
             padding-bottom: 1rem;
         }
 
@@ -173,24 +181,27 @@ def load_css() -> None:
         }
 
         @keyframes softFloat {
-            0% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-7px);
-            }
-            100% {
-                transform: translateY(0);
-            }
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+            100% { transform: translateY(0); }
         }
 
+        @keyframes subtlePulse {
+            0% { box-shadow: 0 0 0 0 rgba(143, 175, 155, 0.18); }
+            60% { box-shadow: 0 0 0 8px rgba(143, 175, 155, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(143, 175, 155, 0); }
+        }
+
+        /* -----------------------------
+           Top Navigation
+        ----------------------------- */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.9rem 0 1rem 0;
+            padding: 0.95rem 0 0.95rem 0;
             border-bottom: 1px solid var(--color-border);
-            margin-bottom: 1.15rem;
+            margin-bottom: 0.72rem;
         }
 
         .brand {
@@ -200,25 +211,25 @@ def load_css() -> None:
         }
 
         .brand-logo {
-            width: 46px;
-            height: 46px;
-            border-radius: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
             background:
-                radial-gradient(circle at 32% 22%, rgba(255,255,255,0.70), transparent 22%),
-                linear-gradient(135deg, #3d3a8c 0%, #6f6baa 52%, #8faf9b 100%);
+                radial-gradient(circle at 32% 22%, rgba(255,255,255,0.72), transparent 22%),
+                linear-gradient(135deg, #3d3a8c 0%, #6f6baa 54%, #8faf9b 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 700;
-            font-size: 1.02rem;
+            font-size: 1rem;
             letter-spacing: -0.08em;
-            box-shadow: 0 14px 30px rgba(61, 58, 140, 0.20);
+            box-shadow: 0 14px 30px rgba(61, 58, 140, 0.18);
             animation: softFloat 6s ease-in-out infinite;
         }
 
         .brand-name {
-            font-size: 1.55rem;
+            font-size: 1.45rem;
             font-weight: 650;
             color: var(--color-text-primary);
             letter-spacing: -0.04em;
@@ -236,13 +247,31 @@ def load_css() -> None:
         }
 
         .nav-note {
-            padding: 0.4rem 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.43rem 0.78rem;
             border-radius: var(--radius-full);
             color: var(--color-primary);
             background: var(--color-primary-subtle);
             border: 1px solid rgba(61, 58, 140, 0.14);
             font-size: 0.82rem;
             font-weight: 600;
+        }
+
+        .nav-note-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--color-accent);
+            box-shadow: 0 0 0 4px rgba(143, 175, 155, 0.16);
+            animation: subtlePulse 2.4s ease-in-out infinite;
+        }
+
+        .nav-helper {
+            color: var(--color-text-tertiary);
+            font-size: 0.78rem;
+            margin-bottom: 0.55rem;
         }
 
         div.stButton > button {
@@ -271,51 +300,63 @@ def load_css() -> None:
             transform: scale(0.985);
         }
 
-        .hero {
-            position: relative;
-            padding: 3.2rem 2.7rem;
-            border-radius: 28px;
-            background:
-                radial-gradient(circle at 85% 15%, rgba(61, 58, 140, 0.10), transparent 32%),
-                radial-gradient(circle at 12% 88%, rgba(143, 175, 155, 0.12), transparent 32%),
-                linear-gradient(135deg, #ffffff 0%, #fafaf9 52%, #f3f1ec 100%);
-            border: 1px solid var(--color-border);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
+        /* -----------------------------
+           Homepage Hero
+        ----------------------------- */
+        .hero-shell {
+            margin-top: 0.95rem;
             animation: fadeUp 0.65s ease-out;
         }
 
-        .hero::after {
+        .hero-panel {
+            position: relative;
+            min-height: 514px;
+            padding: 3.05rem 2.55rem;
+            border-radius: var(--radius-2xl);
+            background:
+                radial-gradient(circle at 84% 18%, rgba(61, 58, 140, 0.10), transparent 32%),
+                radial-gradient(circle at 10% 88%, rgba(143, 175, 155, 0.13), transparent 32%),
+                linear-gradient(135deg, #ffffff 0%, #fafaf9 55%, #f3f1ec 100%);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .hero-panel::after {
             content: "";
             position: absolute;
             width: 270px;
             height: 270px;
             border-radius: 50%;
-            right: -90px;
-            top: -90px;
+            right: -95px;
+            top: -95px;
             background: radial-gradient(circle, rgba(61,58,140,0.10), transparent 68%);
             animation: softFloat 8s ease-in-out infinite;
         }
 
         .eyebrow {
-            display: inline-block;
-            padding: 0.38rem 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.42rem 0.82rem;
             border-radius: var(--radius-full);
             color: var(--color-primary);
             background: var(--color-primary-subtle);
             border: 1px solid rgba(61, 58, 140, 0.14);
-            font-weight: 600;
-            font-size: 0.86rem;
-            margin-bottom: 1rem;
+            font-weight: 650;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 1.05rem;
         }
 
         .hero-title {
             color: var(--color-text-primary);
-            font-size: clamp(2.4rem, 5vw, 4.6rem);
-            line-height: 1.02;
+            font-size: clamp(2.45rem, 5vw, 4.55rem);
+            line-height: 1.01;
             font-weight: 650;
-            letter-spacing: -0.05em;
-            max-width: 1000px;
+            letter-spacing: -0.055em;
+            max-width: 690px;
             margin-bottom: 1rem;
         }
 
@@ -327,30 +368,311 @@ def load_css() -> None:
 
         .hero-copy {
             color: var(--color-text-secondary);
-            font-size: 1.08rem;
-            line-height: 1.75;
-            max-width: 860px;
-            margin-bottom: 1.1rem;
+            font-size: 1.07rem;
+            line-height: 1.72;
+            max-width: 620px;
+            margin-bottom: 1.15rem;
         }
 
-        .mini-proof-row {
+        .tech-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.7rem;
-            margin-top: 1.1rem;
+            gap: 0.58rem;
+            margin-top: 1.15rem;
         }
 
-        .proof-pill {
-            padding: 0.5rem 0.75rem;
-            border-radius: var(--radius-full);
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            padding: 0.52rem 0.72rem;
+            border-radius: 10px;
             background: #ffffff;
             border: 1px solid var(--color-border);
             color: var(--color-text-secondary);
-            font-size: 0.86rem;
+            font-size: 0.83rem;
             font-weight: 500;
             box-shadow: var(--shadow-xs);
         }
 
+        .tech-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--color-primary);
+        }
+
+        .tech-dot.sage {
+            background: var(--color-accent);
+        }
+
+        .tech-dot.amber {
+            background: var(--color-amber);
+        }
+
+        .hero-cta-note {
+            color: var(--color-text-tertiary);
+            font-size: 0.82rem;
+            margin-top: 0.72rem;
+        }
+
+        /* -----------------------------
+           Dashboard mockup
+        ----------------------------- */
+        .dashboard-preview-card {
+            min-height: 514px;
+            padding: 1rem;
+            border-radius: var(--radius-2xl);
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeUp 0.8s ease-out;
+        }
+
+        .dashboard-browser {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.45rem 0.9rem 0.45rem;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 0.85rem;
+        }
+
+        .browser-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: #ddd8cf;
+        }
+
+        .browser-dot.red { background: #df8f83; }
+        .browser-dot.amber { background: #d8b36f; }
+        .browser-dot.green { background: #8faf9b; }
+
+        .browser-url {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0.28rem 2rem;
+            border-radius: 999px;
+            background: var(--color-bg-soft);
+            color: var(--color-text-tertiary);
+            font-size: 0.74rem;
+        }
+
+        .mock-layout {
+            display: grid;
+            grid-template-columns: 54px 1fr;
+            gap: 0.85rem;
+        }
+
+        .mock-sidebar {
+            min-height: 420px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #3d3a8c 0%, #2f2c6d 100%);
+            padding: 0.55rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .mock-side-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            color: rgba(255,255,255,0.82);
+            font-size: 0.9rem;
+        }
+
+        .mock-side-icon.active {
+            background: rgba(255,255,255,0.16);
+            color: #ffffff;
+        }
+
+        .mock-avatar {
+            margin-top: auto;
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            background: #eff5f1;
+            color: #557c5f;
+            display: grid;
+            place-items: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .mock-main {
+            min-width: 0;
+        }
+
+        .mock-topline {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .mock-title {
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            font-weight: 650;
+        }
+
+        .mock-sub {
+            color: var(--color-text-tertiary);
+            font-size: 0.75rem;
+        }
+
+        .mock-date {
+            padding: 0.43rem 0.65rem;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            color: var(--color-text-secondary);
+            font-size: 0.72rem;
+            background: #ffffff;
+        }
+
+        .mock-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.58rem;
+            margin-bottom: 0.78rem;
+        }
+
+        .mock-kpi {
+            padding: 0.72rem;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .mock-kpi-label {
+            color: var(--color-text-tertiary);
+            font-size: 0.68rem;
+            margin-bottom: 0.28rem;
+        }
+
+        .mock-kpi-value {
+            color: var(--color-text-primary);
+            font-size: 1.2rem;
+            font-weight: 650;
+            letter-spacing: -0.03em;
+        }
+
+        .mock-kpi-good {
+            display: inline-flex;
+            margin-top: 0.38rem;
+            padding: 0.16rem 0.36rem;
+            border-radius: 999px;
+            background: var(--color-success-bg);
+            color: var(--color-success);
+            font-size: 0.64rem;
+            font-weight: 600;
+        }
+
+        .mock-lower {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 0.75rem;
+        }
+
+        .mock-chart-card,
+        .mock-activity-card {
+            border: 1px solid var(--color-border);
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 0.85rem;
+            min-height: 205px;
+        }
+
+        .mock-card-heading {
+            font-size: 0.82rem;
+            font-weight: 650;
+            color: var(--color-text-primary);
+            margin-bottom: 0.55rem;
+        }
+
+        .mock-chart {
+            height: 140px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            background:
+                linear-gradient(180deg, rgba(61, 58, 140, 0.05), transparent),
+                repeating-linear-gradient(
+                    to right,
+                    transparent 0,
+                    transparent 38px,
+                    rgba(232, 231, 227, 0.62) 38px,
+                    rgba(232, 231, 227, 0.62) 39px
+                );
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mock-chart::before {
+            content: "";
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            top: 62px;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3d3a8c, #6f6baa, #8faf9b);
+            transform: skewY(-7deg);
+            box-shadow:
+                42px -18px 0 -1px rgba(61,58,140,0.72),
+                96px 13px 0 -1px rgba(143,175,155,0.72),
+                145px -12px 0 -1px rgba(154,116,53,0.46);
+        }
+
+        .mock-activity {
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .mock-activity-row {
+            display: grid;
+            grid-template-columns: 24px 1fr auto;
+            gap: 0.45rem;
+            align-items: center;
+        }
+
+        .mock-activity-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: var(--color-primary-subtle);
+            color: var(--color-primary);
+            font-size: 0.72rem;
+        }
+
+        .mock-activity-text {
+            color: var(--color-text-secondary);
+            font-size: 0.72rem;
+        }
+
+        .mock-activity-time {
+            color: var(--color-text-tertiary);
+            font-size: 0.66rem;
+        }
+
+        .mock-link {
+            color: var(--color-primary);
+            font-size: 0.76rem;
+            font-weight: 600;
+            margin-top: 0.8rem;
+        }
+
+        /* -----------------------------
+           Homepage sections
+        ----------------------------- */
         .section-title {
             margin-top: 2rem;
             margin-bottom: 0.85rem;
@@ -358,6 +680,7 @@ def load_css() -> None:
             font-size: 1.62rem;
             font-weight: 650;
             letter-spacing: -0.02em;
+            text-align: center;
         }
 
         .section-copy {
@@ -365,15 +688,16 @@ def load_css() -> None:
             margin-top: -0.4rem;
             margin-bottom: 1rem;
             line-height: 1.65;
+            text-align: center;
         }
 
         .app-card {
-            padding: 1.35rem;
-            border-radius: var(--radius-md);
+            padding: 1.4rem;
+            border-radius: var(--radius-lg);
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             box-shadow: var(--shadow-sm);
-            min-height: 320px;
+            min-height: 268px;
             animation: fadeUp 0.8s ease-out;
             transition:
                 transform var(--transition-medium),
@@ -389,15 +713,21 @@ def load_css() -> None:
             background: var(--color-surface-hover);
         }
 
+        .app-card-top {
+            display: grid;
+            grid-template-columns: 58px 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
         .icon-box {
-            width: 52px;
-            height: 52px;
+            width: 54px;
+            height: 54px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.45rem;
-            margin-bottom: 0.95rem;
+            font-size: 1.35rem;
             background: var(--color-primary-subtle);
             color: var(--color-primary);
             border: 1px solid rgba(61, 58, 140, 0.12);
@@ -417,26 +747,86 @@ def load_css() -> None:
 
         .app-title {
             color: var(--color-text-primary);
-            font-size: 1.28rem;
+            font-size: 1.18rem;
             font-weight: 650;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.38rem;
         }
 
         .app-copy {
             color: var(--color-text-secondary);
-            line-height: 1.6;
-            min-height: 100px;
-            font-size: 0.95rem;
+            line-height: 1.55;
+            font-size: 0.92rem;
         }
 
         .value-list {
             color: var(--color-primary);
-            font-size: 0.88rem;
-            margin-top: 0.7rem;
+            font-size: 0.86rem;
+            margin-top: 0.95rem;
             line-height: 1.65;
             font-weight: 500;
         }
 
+        .home-impact-strip {
+            margin-top: 1.4rem;
+            padding: 1.2rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            background: rgba(255,255,255,0.72);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .impact-title {
+            text-align: center;
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            font-weight: 650;
+            margin-bottom: 1rem;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+        }
+
+        .impact-item {
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            gap: 0.8rem;
+            align-items: center;
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+        }
+
+        .impact-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: var(--color-success-bg);
+            color: var(--color-success);
+            font-size: 1rem;
+        }
+
+        .impact-number {
+            color: var(--color-text-primary);
+            font-size: 1.18rem;
+            font-weight: 650;
+            line-height: 1;
+        }
+
+        .impact-label {
+            color: var(--color-text-secondary);
+            font-size: 0.78rem;
+            margin-top: 0.18rem;
+        }
+
+        /* -----------------------------
+           Existing module pages
+        ----------------------------- */
         .module-header {
             padding: 1.55rem;
             border-radius: var(--radius-lg);
@@ -539,9 +929,12 @@ def load_css() -> None:
             overflow: hidden;
         }
 
+        /* -----------------------------
+           Footer
+        ----------------------------- */
         .ops-footer {
-            margin-top: 2.5rem;
-            padding: 1.5rem 0 1.2rem 0;
+            margin-top: 2.35rem;
+            padding: 1.65rem 0 1.2rem 0;
             border-top: 1px solid var(--color-border);
             color: var(--color-text-secondary);
             font-size: 0.86rem;
@@ -549,7 +942,7 @@ def load_css() -> None:
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            grid-template-columns: 1.35fr 1fr 1fr 1fr;
             gap: 1.2rem;
         }
 
@@ -558,13 +951,50 @@ def load_css() -> None:
             font-weight: 600;
         }
 
-        .footer-line {
-            margin-top: 1.2rem;
-            color: var(--color-text-tertiary);
-            font-size: 0.78rem;
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            margin-bottom: 0.45rem;
         }
 
-        @media (max-width: 900px) {
+        .footer-mini-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #3d3a8c, #8faf9b);
+        }
+
+        .footer-line {
+            margin-top: 1.15rem;
+            color: var(--color-text-tertiary);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+
+        @media (max-width: 980px) {
+            .hero-panel,
+            .dashboard-preview-card {
+                min-height: auto;
+            }
+
+            .mock-kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .mock-lower,
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mock-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .mock-sidebar {
+                display: none;
+            }
+
             .footer-grid {
                 grid-template-columns: 1fr;
             }
@@ -596,11 +1026,12 @@ def render_topbar() -> None:
                 <div class="brand-logo">OI</div>
                 <div>
                     <div class="brand-name">OpsIntel <span>AI</span></div>
-                    <div class="brand-subtitle">Three AI applications for operations, cost, and hiring intelligence</div>
+                    <div class="brand-subtitle">AI intelligence for support, spend, and hiring workflows</div>
                 </div>
             </div>
-            <div class="nav-note">Professional SaaS interface</div>
+            <div class="nav-note"><span class="nav-note-dot"></span> Live portfolio product</div>
         </div>
+        <div class="nav-helper">Navigate the platform</div>
         """,
         unsafe_allow_html=True,
     )
@@ -617,7 +1048,6 @@ def render_topbar() -> None:
     if nav[4].button("NextHire AI", width="stretch"):
         go_to("NextHire AI")
 
-
 def render_footer() -> None:
     """Render the footer."""
     st.markdown(
@@ -625,8 +1055,11 @@ def render_footer() -> None:
         <div class="ops-footer">
             <div class="footer-grid">
                 <div>
-                    <b>OpsIntel AI</b><br>
-                    Modular AI platform that turns uploaded business data into insights, risk signals, and action plans.
+                    <div class="footer-brand">
+                        <div class="footer-mini-logo"></div>
+                        <b>OpsIntel AI</b>
+                    </div>
+                    AI-powered intelligence for modern support, finance, and hiring operations.
                 </div>
                 <div>
                     <b>Applications</b><br>
@@ -638,13 +1071,13 @@ def render_footer() -> None:
                     <b>Outputs</b><br>
                     Risk scores<br>
                     Savings opportunities<br>
-                    Manager-ready reports
+                    Recruiter-ready reports
                 </div>
                 <div>
                     <b>Built With</b><br>
-                    Python • Pandas • Streamlit<br>
+                    Python • Streamlit • Pandas<br>
                     Plotly charts<br>
-                    Gemini LLM agents with rule-based fallback
+                    Gemini LLM agents
                 </div>
             </div>
             <div class="footer-line">
@@ -654,7 +1087,6 @@ def render_footer() -> None:
         """,
         unsafe_allow_html=True,
     )
-
 
 def render_module_header(kicker: str, title: str, copy: str) -> None:
     """Render a module header."""
@@ -1014,32 +1446,415 @@ Structured Interview Questions:
 # PAGES
 # =============================================================================
 def render_home_page() -> None:
-    """Render home page."""
-    st.markdown(
-        """
-        <div class="hero">
-            <div class="eyebrow">OpsIntel AI · Three Application Platform</div>
-            <div class="hero-title">
-                One professional platform for <span>operations, cost, and hiring intelligence.</span>
-            </div>
-            <div class="hero-copy">
-                Upload business data and turn it into risk signals, savings opportunities,
-                hiring insights, AI recommendations, and manager-ready reports.
-            </div>
-            <div class="mini-proof-row">
-                <div class="proof-pill">SupportOps risk detection</div>
-                <div class="proof-pill">CostOps savings analysis</div>
-                <div class="proof-pill">NextHire hiring intelligence</div>
-                <div class="proof-pill">Downloadable reports</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    """Render polished SaaS-style home page."""
+    st.markdown('<div class="hero-shell">', unsafe_allow_html=True)
 
-    st.markdown('<div class="section-title">Choose one application</div>', unsafe_allow_html=True)
+    hero_left, hero_right = st.columns([0.88, 1.12], gap="large")
+
+    with hero_left:
+        st.markdown(
+            """
+            <div class="hero-panel">
+                <div class="eyebrow">✦ AI Operations Intelligence Platform</div>
+                <div class="hero-title">
+                    One platform for operations, cost, and hiring <span>intelligence.</span>
+                </div>
+                <div class="hero-copy">
+                    OpsIntel AI connects business data, surfaces what matters, and delivers
+                    actionable insights across support, spend, and talent operations.
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        cta1, cta2 = st.columns([1, 1])
+        if cta1.button("Explore Platform", key="hero_explore", width="stretch"):
+            go_to("Why Us")
+        if cta2.button("View Live Demo", key="hero_demo", width="stretch"):
+            enable_support_demo()
+
+        st.markdown(
+            """
+                <div class="hero-cta-note">Start with the demo dataset, then upload your own business data.</div>
+                <div class="tech-strip">
+                    <div class="tech-pill"><span class="tech-dot"></span> Python</div>
+                    <div class="tech-pill"><span class="tech-dot sage"></span> Streamlit</div>
+                    <div class="tech-pill"><span class="tech-dot amber"></span> Pandas</div>
+                    <div class="tech-pill"><span class="tech-dot"></span> Plotly</div>
+                    <div class="tech-pill"><span class="tech-dot sage"></span> Gemini</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with hero_right:
+        dashboard_preview_html = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+:root {
+  --primary: #3d3a8c;
+  --primary-2: #6f6baa;
+  --sage: #8faf9b;
+  --sage-dark: #557c5f;
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --border: #e8e7e3;
+  --border-2: #d7d5cf;
+  --text: #1c1c1a;
+  --muted: #6b6a66;
+  --soft: #f4f3f0;
+  --shadow: 0 24px 60px rgba(28, 28, 26, 0.10);
+}
+* {
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+}
+.dashboard-preview-card {
+  min-height: 514px;
+  padding: 1rem;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.dashboard-browser {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.45rem 0.9rem 0.45rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.85rem;
+}
+.browser-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #ddd8cf;
+}
+.browser-dot.red { background: #df8f83; }
+.browser-dot.amber { background: #d8b36f; }
+.browser-dot.green { background: #8faf9b; }
+.browser-url {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.28rem 2rem;
+  border-radius: 999px;
+  background: var(--bg);
+  color: #8b8983;
+  font-size: 0.74rem;
+}
+.mock-layout {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 0.85rem;
+}
+.mock-sidebar {
+  min-height: 420px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #3d3a8c 0%, #2f2c6d 100%);
+  padding: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+.mock-side-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,0.82);
+  font-size: 0.9rem;
+}
+.mock-side-icon.active {
+  background: rgba(255,255,255,0.16);
+  color: #ffffff;
+}
+.mock-avatar {
+  margin-top: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #eff5f1;
+  color: #557c5f;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.mock-main {
+  min-width: 0;
+}
+.mock-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+.mock-title {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 650;
+}
+.mock-sub {
+  color: #8b8983;
+  font-size: 0.75rem;
+}
+.mock-date {
+  padding: 0.43rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  background: #ffffff;
+  white-space: nowrap;
+}
+.mock-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.58rem;
+  margin-bottom: 0.78rem;
+}
+.mock-kpi {
+  padding: 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+.mock-kpi-label {
+  color: #8b8983;
+  font-size: 0.68rem;
+  margin-bottom: 0.28rem;
+}
+.mock-kpi-value {
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.mock-kpi-good {
+  display: inline-flex;
+  margin-top: 0.38rem;
+  padding: 0.16rem 0.36rem;
+  border-radius: 999px;
+  background: #eff5f1;
+  color: #557c5f;
+  font-size: 0.64rem;
+  font-weight: 600;
+}
+.mock-lower {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 0.75rem;
+}
+.mock-chart-card,
+.mock-activity-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.85rem;
+  min-height: 205px;
+}
+.mock-card-heading {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--text);
+  margin-bottom: 0.55rem;
+}
+.mock-chart {
+  height: 140px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(61, 58, 140, 0.05), transparent),
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent 38px,
+      rgba(232, 231, 227, 0.62) 38px,
+      rgba(232, 231, 227, 0.62) 39px
+    );
+  position: relative;
+  overflow: hidden;
+}
+.mock-chart::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 62px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3d3a8c, #6f6baa, #8faf9b);
+  transform: skewY(-7deg);
+  box-shadow:
+    42px -18px 0 -1px rgba(61,58,140,0.72),
+    96px 13px 0 -1px rgba(143,175,155,0.72),
+    145px -12px 0 -1px rgba(154,116,53,0.46);
+}
+.mock-activity {
+  display: grid;
+  gap: 0.55rem;
+}
+.mock-activity-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+.mock-activity-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(61, 58, 140, 0.08);
+  color: var(--primary);
+  font-size: 0.72rem;
+}
+.mock-activity-text {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.mock-activity-time {
+  color: #8b8983;
+  font-size: 0.66rem;
+}
+.mock-link {
+  color: var(--primary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-top: 0.8rem;
+}
+@media (max-width: 760px) {
+  .dashboard-preview-card {
+    min-height: auto;
+  }
+  .mock-layout {
+    grid-template-columns: 1fr;
+  }
+  .mock-sidebar {
+    display: none;
+  }
+  .mock-kpis,
+  .mock-lower {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="dashboard-preview-card">
+    <div class="dashboard-browser">
+      <span class="browser-dot red"></span>
+      <span class="browser-dot amber"></span>
+      <span class="browser-dot green"></span>
+      <span class="browser-url">opsintel.ai</span>
+    </div>
+
+    <div class="mock-layout">
+      <div class="mock-sidebar">
+        <div class="mock-side-icon active">⌂</div>
+        <div class="mock-side-icon">▥</div>
+        <div class="mock-side-icon">$</div>
+        <div class="mock-side-icon">◌</div>
+        <div class="mock-side-icon">⚙</div>
+        <div class="mock-avatar">AI</div>
+      </div>
+
+      <div class="mock-main">
+        <div class="mock-topline">
+          <div>
+            <div class="mock-title">Overview</div>
+            <div class="mock-sub">Real-time summary of your operations.</div>
+          </div>
+          <div class="mock-date">May 12 – May 18, 2026</div>
+        </div>
+
+        <div class="mock-kpis">
+          <div class="mock-kpi">
+            <div class="mock-kpi-label">Total Tickets</div>
+            <div class="mock-kpi-value">12,842</div>
+            <div class="mock-kpi-good">▲ 8.6%</div>
+          </div>
+          <div class="mock-kpi">
+            <div class="mock-kpi-label">Avg Resolution</div>
+            <div class="mock-kpi-value">18.6h</div>
+            <div class="mock-kpi-good">▼ 11.2%</div>
+          </div>
+          <div class="mock-kpi">
+            <div class="mock-kpi-label">Cost Leak</div>
+            <div class="mock-kpi-value">$248K</div>
+            <div class="mock-kpi-good">▲ 9.3%</div>
+          </div>
+          <div class="mock-kpi">
+            <div class="mock-kpi-label">Profiles</div>
+            <div class="mock-kpi-value">3,421</div>
+            <div class="mock-kpi-good">▲ 24.7%</div>
+          </div>
+        </div>
+
+        <div class="mock-lower">
+          <div class="mock-chart-card">
+            <div class="mock-card-heading">Trends</div>
+            <div class="mock-chart"></div>
+            <div class="mock-link">View full dashboard →</div>
+          </div>
+
+          <div class="mock-activity-card">
+            <div class="mock-card-heading">Recent Activity</div>
+            <div class="mock-activity">
+              <div class="mock-activity-row">
+                <div class="mock-activity-icon">!</div>
+                <div class="mock-activity-text">High cost leak detected</div>
+                <div class="mock-activity-time">2m</div>
+              </div>
+              <div class="mock-activity-row">
+                <div class="mock-activity-icon">↗</div>
+                <div class="mock-activity-text">Billing ticket spike</div>
+                <div class="mock-activity-time">15m</div>
+              </div>
+              <div class="mock-activity-row">
+                <div class="mock-activity-icon">◎</div>
+                <div class="mock-activity-text">Candidate batch screened</div>
+                <div class="mock-activity-time">1h</div>
+              </div>
+              <div class="mock-activity-row">
+                <div class="mock-activity-icon">◆</div>
+                <div class="mock-activity-text">Storage spend anomaly</div>
+                <div class="mock-activity-time">2h</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+"""
+        components.html(dashboard_preview_html, height=540, scrolling=False)
+
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Choose an application</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-copy">Three modules. Clean navigation. Each application has its own workflow.</div>',
+        '<div class="section-copy">Three focused modules. Each application has a clear workflow, a report output, and business value.</div>',
         unsafe_allow_html=True,
     )
 
@@ -1049,70 +1864,113 @@ def render_home_page() -> None:
         st.markdown(
             """
             <div class="app-card">
-                <div class="icon-box sage">🎧</div>
-                <div class="app-title">SupportOps Analyzer</div>
-                <div class="app-copy">
-                    Analyze support tickets for SLA breaches, customer frustration, escalation risk,
-                    agent workload, and root-cause issues.
+                <div class="app-card-top">
+                    <div class="icon-box sage">🎧</div>
+                    <div>
+                        <div class="app-title">SupportOps Analyzer</div>
+                        <div class="app-copy">
+                            Analyze support performance, SLA risk, customer frustration,
+                            escalation pressure, and agent workload.
+                        </div>
+                    </div>
                 </div>
                 <div class="value-list">
-                    • Reduce escalation rework<br>
-                    • Prioritize risky tickets<br>
+                    • Reduce ticket rework<br>
+                    • Prioritize risky customers<br>
                     • Generate manager briefings
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open SupportOps", key="home_support", width="stretch"):
+        if st.button("Explore SupportOps →", key="home_support", width="stretch"):
             go_to("SupportOps Analyzer")
 
     with col2:
         st.markdown(
             """
             <div class="app-card">
-                <div class="icon-box amber">💰</div>
-                <div class="app-title">CostOps Analyzer</div>
-                <div class="app-copy">
-                    Analyze budgets, actual spend, vendors, departments, cost anomalies,
-                    and estimated savings opportunities.
+                <div class="app-card-top">
+                    <div class="icon-box amber">💰</div>
+                    <div>
+                        <div class="app-title">CostOps Analyzer</div>
+                        <div class="app-copy">
+                            Uncover cost leaks, track budget variance, find vendor concentration,
+                            and prioritize savings opportunities.
+                        </div>
+                    </div>
                 </div>
                 <div class="value-list">
                     • Detect overspending<br>
                     • Find avoidable variance<br>
-                    • Prioritize savings actions
+                    • Download savings reports
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open CostOps", key="home_cost", width="stretch"):
+        if st.button("Explore CostOps →", key="home_cost", width="stretch"):
             go_to("CostOps Analyzer")
 
     with col3:
         st.markdown(
             """
             <div class="app-card">
-                <div class="icon-box">🧠</div>
-                <div class="app-title">NextHire AI</div>
-                <div class="app-copy">
-                    Screen candidate profiles against role requirements, calculate match score,
-                    identify hiring gaps, and generate recruiter-ready reports.
+                <div class="app-card-top">
+                    <div class="icon-box">🧠</div>
+                    <div>
+                        <div class="app-title">NextHire AI</div>
+                        <div class="app-copy">
+                            Screen candidate profiles against role requirements, calculate fit,
+                            identify gaps, and create hiring reports.
+                        </div>
+                    </div>
                 </div>
                 <div class="value-list">
                     • Reduce screening time<br>
-                    • Improve candidate screening<br>
-                    • Generate hiring reports
+                    • Improve candidate review<br>
+                    • Generate hiring briefings
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open NextHire AI", key="home_hire", width="stretch"):
+        if st.button("Explore NextHire AI →", key="home_hire", width="stretch"):
             go_to("NextHire AI")
 
-    render_footer()
+    st.markdown(
+        """
+        <div class="home-impact-strip">
+            <div class="impact-title">Why teams use OpsIntel AI</div>
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <div class="impact-icon">↗</div>
+                    <div>
+                        <div class="impact-number">5–15%</div>
+                        <div class="impact-label">potential support rework reduction</div>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">$</div>
+                    <div>
+                        <div class="impact-number">8–12%</div>
+                        <div class="impact-label">potential spend leak discovery</div>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">◎</div>
+                    <div>
+                        <div class="impact-number">30–50%</div>
+                        <div class="impact-label">manual screening time reduction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
+    render_footer()
 
 def render_why_us_page() -> None:
     """Render Why Us page."""
