@@ -512,14 +512,7 @@ def load_css() -> None:
         [data-testid="stMetric"] label {
             color: var(--color-text-secondary);
         }
-[data-testid="stMetricValue"] {
-    color: var(--color-primary) !important;
-    font-weight: 650 !important;
-}
 
-[data-testid="stMetricValue"] div {
-    color: var(--color-primary) !important;
-}
         .stTabs [data-baseweb="tab-list"] {
             gap: 0.35rem;
             border-bottom: 1px solid var(--color-border);
@@ -613,15 +606,15 @@ def render_topbar() -> None:
     )
 
     nav = st.columns(5)
-    if nav[0].button("Home", use_container_width=True):
+    if nav[0].button("Home", width="stretch"):
         go_to("Home")
-    if nav[1].button("Why Us", use_container_width=True):
+    if nav[1].button("Why Us", width="stretch"):
         go_to("Why Us")
-    if nav[2].button("SupportOps", use_container_width=True):
+    if nav[2].button("SupportOps", width="stretch"):
         go_to("SupportOps Analyzer")
-    if nav[3].button("CostOps", use_container_width=True):
+    if nav[3].button("CostOps", width="stretch"):
         go_to("CostOps Analyzer")
-    if nav[4].button("NextHire AI", use_container_width=True):
+    if nav[4].button("NextHire AI", width="stretch"):
         go_to("NextHire AI")
 
 
@@ -889,32 +882,32 @@ def generate_nexthire_ai_feedback(
     missing: list[str],
 ) -> dict:
     """
-    Generate real AI resume feedback using Gemini.
-    Falls back to keyword-based feedback if Gemini is unavailable.
+    Generate recruiter-facing hiring decision support using Gemini.
+    Falls back to keyword-based hiring feedback if Gemini is unavailable.
     """
     fallback = {
         "overall_feedback": (
-            f"The resume has a {score}/100 keyword match with the job description. "
-            "It shows some relevant experience, but the resume should better align achievements, tools, and business impact with the target role."
+            f"The candidate has a {score}/100 match with the role requirements. "
+            "The profile shows relevant signals, but the hiring team should validate hands-on experience, business impact, and the missing role requirements before moving forward."
         ),
         "strengths": matched[:8],
         "gaps": missing[:8],
         "resume_improvements": [
-            "Add missing job keywords naturally into experience bullets.",
-            "Show measurable outcomes such as time saved, cost reduced, improved accuracy, or automated reporting.",
-            "Add a stronger technical skills section aligned with the job description.",
-            "Include one project bullet showing end-to-end analysis from raw data to recommendation.",
-            "Use stakeholder-facing language such as requirements gathering, documentation, KPI reporting, and process improvement.",
+            "Review the missing role keywords before shortlisting the candidate.",
+            "Validate hands-on experience for the most important required tools and responsibilities.",
+            "Ask for measurable examples such as time saved, cost reduced, accuracy improved, or reports automated.",
+            "Check whether the candidate has end-to-end experience from raw data to business recommendation.",
+            "Use stakeholder, documentation, KPI reporting, and process-improvement questions during the interview.",
         ],
         "interview_questions": [
             "Tell me about a time you improved a business process.",
             "How do you gather and document requirements from stakeholders?",
-            "How would you analyze SLA or cost performance data?",
-            "What dashboards or reports have you built?",
-            "How do you explain technical findings to non-technical users?",
+            "How would you analyze SLA, cost, or performance data?",
+            "What dashboards or reports have you built, and who used them?",
+            "How do you explain technical findings to non-technical stakeholders?",
         ],
         "agent_trace": [
-            "Generated fallback keyword-based NextHire feedback.",
+            "Generated fallback keyword-based NextHire hiring briefing.",
         ],
     }
 
@@ -923,9 +916,9 @@ def generate_nexthire_ai_feedback(
         return fallback
 
     prompt = f"""
-You are an expert resume coach and business analyst hiring advisor.
+You are an expert recruiter, hiring manager, and business analyst hiring advisor.
 
-Analyze the resume against the job description.
+Analyze the candidate profile against the role requirements.
 Return ONLY valid JSON.
 Do not include markdown.
 Do not include explanations outside JSON.
@@ -933,23 +926,23 @@ Do not include explanations outside JSON.
 Use this exact JSON schema:
 
 {{
-  "overall_feedback": "clear coaching summary",
-  "strengths": ["strength 1", "strength 2", "strength 3"],
-  "gaps": ["gap 1", "gap 2", "gap 3"],
-  "resume_improvements": ["improvement 1", "improvement 2", "improvement 3", "improvement 4", "improvement 5"],
-  "interview_questions": ["question 1", "question 2", "question 3", "question 4", "question 5"],
+  "overall_feedback": "clear recruiter-facing hiring summary",
+  "strengths": ["candidate strength 1", "candidate strength 2", "candidate strength 3"],
+  "gaps": ["hiring gap or risk 1", "hiring gap or risk 2", "hiring gap or risk 3"],
+  "resume_improvements": ["recruiter recommendation 1", "recruiter recommendation 2", "recruiter recommendation 3", "recruiter recommendation 4", "recruiter recommendation 5"],
+  "interview_questions": ["structured interview question 1", "structured interview question 2", "structured interview question 3", "structured interview question 4", "structured interview question 5"],
   "agent_trace": ["step 1", "step 2", "step 3"]
 }}
 
 Rules:
-- Be honest but helpful.
-- Do not invent experience that is not in the resume.
+- Be honest, practical, and recruiter-oriented.
+- Do not invent experience that is not in the candidate profile.
+- Focus on hiring decision support, not personal resume coaching.
+- Identify strengths, gaps, risks, and validation questions.
 - Focus on business analyst, operations analyst, data analyst, implementation, and project-oriented roles.
-- Give practical resume coaching.
-- Make the feedback recruiter-oriented.
 - Return only valid JSON.
 
-Keyword score: {score}/100
+Candidate-role match score: {score}/100
 
 Matched keywords:
 {matched}
@@ -957,10 +950,10 @@ Matched keywords:
 Missing keywords:
 {missing}
 
-Resume:
+Candidate profile:
 {resume_text}
 
-Job description:
+Role requirements:
 {jd_text}
 """
 
@@ -974,40 +967,48 @@ Job description:
         )
 
         result = _extract_json_response(response.text)
-        result["agent_trace"] = result.get("agent_trace", [])
-        result["agent_trace"].append(f"Gemini NextHire feedback completed using {model}.")
+
+        # Keep stable internal keys so the dashboard does not crash if Gemini omits a field.
+        result.setdefault("overall_feedback", fallback["overall_feedback"])
+        result.setdefault("strengths", fallback["strengths"])
+        result.setdefault("gaps", fallback["gaps"])
+        result.setdefault("resume_improvements", fallback["resume_improvements"])
+        result.setdefault("interview_questions", fallback["interview_questions"])
+        result.setdefault("agent_trace", [])
+
+        result["agent_trace"].append(f"Gemini NextHire hiring briefing completed using {model}.")
         return result
 
     except Exception as error:
-        fallback["agent_trace"].append(f"Gemini NextHire feedback failed. Fallback used. Error: {error}")
+        fallback["agent_trace"].append(f"Gemini NextHire hiring briefing failed. Fallback used. Error: {error}")
         return fallback
+
 def generate_nexthire_report(score: int, matched: list[str], missing: list[str]) -> str:
-    """Generate a candidate readiness report."""
-    return f"""OpsIntel AI - NextHire Candidate Report
+    """Generate a recruiter-facing hiring report."""
+    return f"""OpsIntel AI - NextHire Hiring Report
 
-Resume-Job Match Score: {score}/100
+Candidate-Role Match Score: {score}/100
 
-Matched Keywords:
+Matched Role Keywords:
 {", ".join(matched[:20])}
 
-Missing / Weak Keywords:
+Missing / Weak Role Keywords:
 {", ".join(missing[:20])}
 
-Recommended Resume Improvements:
-1. Add missing job keywords naturally into experience bullets.
-2. Show measurable impact with numbers, such as time saved, cost reduced, or reports automated.
-3. Add a technical skills section with SQL, Python, Excel, BI tools, and dashboarding tools.
-4. Add one project bullet showing end-to-end analysis from raw data to recommendation.
-5. Prepare interview examples for stakeholder management, process improvement, and KPI reporting.
+Recruiter Recommendations:
+1. Review the missing role keywords before moving the candidate forward.
+2. Validate the candidate's hands-on experience with the most important required skills.
+3. Ask for examples of measurable business impact, such as time saved, cost reduced, accuracy improved, or reports automated.
+4. Check whether the candidate has end-to-end experience from raw data to business recommendation.
+5. Use structured interview questions to confirm stakeholder, analytics, and communication skills.
 
-Interview Prep Questions:
+Structured Interview Questions:
 1. Tell me about a time you improved a business process.
-2. How do you gather requirements from stakeholders?
-3. How would you analyze SLA or cost performance data?
+2. How do you gather and document requirements from stakeholders?
+3. How would you analyze SLA, cost, or performance data?
 4. What dashboards or reports have you built?
-5. How do you communicate insights to non-technical users?
+5. How do you communicate insights to non-technical stakeholders?
 """
-
 
 # =============================================================================
 # PAGES
@@ -1023,12 +1024,12 @@ def render_home_page() -> None:
             </div>
             <div class="hero-copy">
                 Upload business data and turn it into risk signals, savings opportunities,
-                skill-gap insights, AI recommendations, and manager-ready reports.
+                hiring insights, AI recommendations, and manager-ready reports.
             </div>
             <div class="mini-proof-row">
                 <div class="proof-pill">SupportOps risk detection</div>
                 <div class="proof-pill">CostOps savings analysis</div>
-                <div class="proof-pill">NextHire skill-gap scoring</div>
+                <div class="proof-pill">NextHire hiring intelligence</div>
                 <div class="proof-pill">Downloadable reports</div>
             </div>
         </div>
@@ -1063,7 +1064,7 @@ def render_home_page() -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open SupportOps", key="home_support", use_container_width=True):
+        if st.button("Open SupportOps", key="home_support", width="stretch"):
             go_to("SupportOps Analyzer")
 
     with col2:
@@ -1085,7 +1086,7 @@ def render_home_page() -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open CostOps", key="home_cost", use_container_width=True):
+        if st.button("Open CostOps", key="home_cost", width="stretch"):
             go_to("CostOps Analyzer")
 
     with col3:
@@ -1095,19 +1096,19 @@ def render_home_page() -> None:
                 <div class="icon-box">🧠</div>
                 <div class="app-title">NextHire AI</div>
                 <div class="app-copy">
-                    Compare resumes with job descriptions, calculate match score,
-                    identify skill gaps, and generate interview preparation.
+                    Screen candidate profiles against role requirements, calculate match score,
+                    identify hiring gaps, and generate recruiter-ready reports.
                 </div>
                 <div class="value-list">
                     • Reduce screening time<br>
-                    • Improve candidate fit<br>
-                    • Generate readiness reports
+                    • Improve candidate screening<br>
+                    • Generate hiring reports
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("Open NextHire AI", key="home_hire", use_container_width=True):
+        if st.button("Open NextHire AI", key="home_hire", width="stretch"):
             go_to("NextHire AI")
 
     render_footer()
@@ -1163,7 +1164,7 @@ def render_why_us_page() -> None:
                 <div class="metric-number">30–50%</div>
                 <div class="metric-label">Manual screening time reduction</div>
                 <div class="metric-note">
-                    NextHire AI can pre-score resumes against job descriptions so recruiters and candidates can focus on fit faster.
+                    NextHire AI can pre-score candidate profiles against role requirements so hiring teams can focus on fit faster.
                 </div>
             </div>
             """,
@@ -1202,10 +1203,10 @@ def render_supportops_page() -> None:
     uploaded_file = st.file_uploader("Upload support ticket CSV", type=["csv"], help="Upload a CSV with support ticket fields.")
 
     action_cols = st.columns(2)
-    if action_cols[0].button("Use demo support data", use_container_width=True):
+    if action_cols[0].button("Use demo support data", width="stretch"):
         enable_support_demo()
 
-    if action_cols[1].button("Clear support demo", use_container_width=True):
+    if action_cols[1].button("Clear support demo", width="stretch"):
         st.session_state["support_demo_enabled"] = False
         st.rerun()
 
@@ -1261,21 +1262,21 @@ def render_supportops_page() -> None:
 
         issue_summary = issue_type_summary(filtered_df)
         fig = px.bar(issue_summary, x="issue_type", y="total_tickets", title="Ticket Volume by Issue Type", text="total_tickets")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with support_tabs[2]:
         st.subheader("SLA & Escalation Risk")
         dept_sla = sla_summary_by_department(filtered_df)
         fig = px.bar(dept_sla, x="department", y="sla_breach_rate", title="SLA Breach Rate by Department", text="sla_breach_rate")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         risk_counts = scored_df["risk_level"].value_counts().reset_index()
         risk_counts.columns = ["risk_level", "count"]
         fig = px.bar(risk_counts, x="risk_level", y="count", title="Escalation Risk Levels", text="count")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         st.subheader("Top High-Risk Tickets")
-        st.dataframe(top_high_risk_tickets(filtered_df), use_container_width=True)
+        st.dataframe(top_high_risk_tickets(filtered_df), width="stretch")
 
     with support_tabs[3]:
         agent_subtabs = st.tabs(["AI Ticket Triage", "Daily Briefing", "Agent Performance"])
@@ -1286,7 +1287,7 @@ def render_supportops_page() -> None:
             selected_ticket_id = st.selectbox("Select a ticket", ticket_options)
             selected_ticket = scored_df[scored_df["ticket_id"] == selected_ticket_id].iloc[0]
 
-            if st.button("Analyze Selected Ticket", use_container_width=True):
+            if st.button("Analyze Selected Ticket", width="stretch"):
                 agent_result = analyze_ticket(selected_ticket)
                 col1, col2, col3, col4 = st.columns(4)
                 col1.metric("Risk Score", f"{agent_result['risk_score']}/100")
@@ -1334,10 +1335,10 @@ def render_supportops_page() -> None:
             st.subheader("Agent Performance")
             agent_summary = agent_performance_summary(filtered_df)
             fig = px.bar(agent_summary, x="agent", y="total_tickets", title="Ticket Workload by Agent", text="total_tickets")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             fig = px.bar(agent_summary, x="agent", y="sla_breach_rate", title="SLA Breach Rate by Agent", text="sla_breach_rate")
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(agent_summary, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
+            st.dataframe(agent_summary, width="stretch")
 
     with support_tabs[4]:
         st.subheader("Download SupportOps Report")
@@ -1348,12 +1349,12 @@ def render_supportops_page() -> None:
             data=report_text,
             file_name="supportops_manager_report.txt",
             mime="text/plain",
-            use_container_width=True,
+            width="stretch",
         )
 
     with support_tabs[5]:
         st.subheader("Raw Support Ticket Data")
-        st.dataframe(scored_df, use_container_width=True)
+        st.dataframe(scored_df, width="stretch")
 
 
 def render_costops_page() -> None:
@@ -1401,21 +1402,21 @@ def render_costops_page() -> None:
     with tabs[0]:
         monthly = df.groupby("date", as_index=False)[["budget_amount", "actual_amount"]].sum()
         fig = px.line(monthly, x="date", y=["budget_amount", "actual_amount"], title="Budget vs Actual Spend Trend", markers=True)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         fig = px.bar(df, x="cost_category", y="variance", color="risk_level", title="Cost Variance by Category", text="variance")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with tabs[1]:
         dept = df.groupby("department", as_index=False)[["budget_amount", "actual_amount", "variance", "savings_opportunity"]].sum()
         fig = px.bar(dept, x="department", y="variance", title="Budget Variance by Department", text="variance")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         vendor = df.groupby("vendor", as_index=False)["actual_amount"].sum().sort_values("actual_amount", ascending=False)
         fig = px.pie(vendor, names="vendor", values="actual_amount", title="Vendor Spend Concentration")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
-        st.dataframe(dept, use_container_width=True)
+        st.dataframe(dept, width="stretch")
 
     with tabs[2]:
         report = generate_cost_report(df)
@@ -1425,27 +1426,29 @@ def render_costops_page() -> None:
             data=report,
             file_name="costops_savings_report.txt",
             mime="text/plain",
-            use_container_width=True,
+            width="stretch",
         )
 
     with tabs[3]:
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch")
+
+
 def render_nexthire_page() -> None:
     """Render NextHire AI."""
     render_module_header(
         "APPLICATION 3",
         "NextHire AI",
-        "Compare a resume with a job description, calculate match score, identify missing keywords, and generate interview prep.",
+        "Screen candidates against role requirements, identify skill gaps, generate recruiter-ready summaries, and support hiring decisions.",
     )
 
     input_cols = st.columns(2)
     with input_cols[0]:
-        resume_text = st.text_area("Resume text", value=DEMO_RESUME, height=330)
+        resume_text = st.text_area("Candidate resume / profile", value=DEMO_RESUME, height=330)
     with input_cols[1]:
-        jd_text = st.text_area("Job description", value=DEMO_JD, height=330)
+        jd_text = st.text_area("Role requirements / job description", value=DEMO_JD, height=330)
 
     if not resume_text.strip() or not jd_text.strip():
-        st.warning("Paste both resume text and job description to analyze.")
+        st.warning("Paste both candidate profile and role requirements to analyze.")
         return
 
     score, matched, missing = analyze_resume_match(resume_text, jd_text)
@@ -1453,8 +1456,8 @@ def render_nexthire_page() -> None:
     if "nexthire_ai_feedback" not in st.session_state:
         st.session_state["nexthire_ai_feedback"] = None
 
-    if st.button("Generate Gemini Resume Coaching", use_container_width=True):
-        with st.spinner("Gemini is analyzing the resume and job description..."):
+    if st.button("Generate Gemini Hiring Briefing", width="stretch"):
+        with st.spinner("Gemini is analyzing the candidate profile and role requirements..."):
             st.session_state["nexthire_ai_feedback"] = generate_nexthire_ai_feedback(
                 resume_text,
                 jd_text,
@@ -1466,19 +1469,19 @@ def render_nexthire_page() -> None:
     ai_feedback = st.session_state.get("nexthire_ai_feedback")
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("Resume-JD Match Score", f"{score}/100")
+    c1.metric("Candidate-Role Match Score", f"{score}/100")
     c2.metric("Matched Keywords", len(matched))
     c3.metric("Missing Keywords", len(missing))
 
-    tabs = st.tabs(["Skill Match", "Suggestions", "Interview Prep", "Report"])
+    tabs = st.tabs(["Candidate Match", "Recruiter Insights", "Interview Plan", "Hiring Report"])
 
     with tabs[0]:
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader("Matched Keywords")
+            st.subheader("Matched Role Keywords")
             st.write(", ".join(matched[:30]) if matched else "No strong matches found.")
         with col2:
-            st.subheader("Missing / Weak Keywords")
+            st.subheader("Missing / Weak Role Keywords")
             st.write(", ".join(missing[:30]) if missing else "No major missing keywords found.")
 
         chart_df = pd.DataFrame(
@@ -1491,27 +1494,27 @@ def render_nexthire_page() -> None:
             chart_df,
             x="category",
             y="count",
-            title="Resume Keyword Coverage",
+            title="Candidate-Role Keyword Coverage",
             text="count",
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with tabs[1]:
-        st.subheader("Gemini Resume Coaching")
+        st.subheader("Gemini Hiring Decision Support")
 
         if ai_feedback:
-            st.markdown("### Overall Feedback")
-            st.write(ai_feedback["overall_feedback"])
+            st.markdown("### Hiring Summary")
+            st.write(ai_feedback.get("overall_feedback", "No hiring summary available."))
 
-            st.markdown("### Strengths")
+            st.markdown("### Candidate Strengths")
             for item in ai_feedback.get("strengths", []):
                 st.write(f"✅ {item}")
 
-            st.markdown("### Gaps")
+            st.markdown("### Hiring Gaps / Risks")
             for item in ai_feedback.get("gaps", []):
                 st.write(f"⚠️ {item}")
 
-            st.markdown("### Resume Improvements")
+            st.markdown("### Recruiter Recommendations")
             for idx, suggestion in enumerate(ai_feedback.get("resume_improvements", []), start=1):
                 st.write(f"{idx}. {suggestion}")
 
@@ -1519,14 +1522,18 @@ def render_nexthire_page() -> None:
             for step in ai_feedback.get("agent_trace", []):
                 st.write(f"✅ {step}")
         else:
-            st.info("Click **Generate Gemini Resume Coaching** above to get AI-powered resume feedback.")
+            st.info("Click **Generate Gemini Hiring Briefing** above to get AI-powered recruiter insights.")
 
     with tabs[2]:
-        st.subheader("Interview Prep Questions")
+        st.subheader("Structured Interview Questions")
 
         if ai_feedback:
-            for idx, question in enumerate(ai_feedback.get("interview_questions", []), start=1):
-                st.write(f"{idx}. {question}")
+            questions = ai_feedback.get("interview_questions", [])
+            if questions:
+                for idx, question in enumerate(questions, start=1):
+                    st.write(f"{idx}. {question}")
+            else:
+                st.info("No interview questions were generated.")
         else:
             questions = [
                 "Tell me about a time you improved a business process.",
@@ -1538,25 +1545,26 @@ def render_nexthire_page() -> None:
             ]
             for idx, question in enumerate(questions, start=1):
                 st.write(f"{idx}. {question}")
+
     with tabs[3]:
         if ai_feedback:
-            report = f"""OpsIntel AI - NextHire Gemini Candidate Report
+            report = f"""OpsIntel AI - NextHire Gemini Hiring Report
 
-Resume-Job Match Score: {score}/100
+Candidate-Role Match Score: {score}/100
 
-Overall Feedback:
-{ai_feedback["overall_feedback"]}
+Hiring Summary:
+{ai_feedback.get("overall_feedback", "No hiring summary available.")}
 
-Strengths:
+Candidate Strengths:
 {chr(10).join([f"- {item}" for item in ai_feedback.get("strengths", [])])}
 
-Gaps:
+Hiring Gaps / Risks:
 {chr(10).join([f"- {item}" for item in ai_feedback.get("gaps", [])])}
 
-Recommended Resume Improvements:
+Recruiter Recommendations:
 {chr(10).join([f"{idx}. {item}" for idx, item in enumerate(ai_feedback.get("resume_improvements", []), start=1)])}
 
-Interview Prep Questions:
+Structured Interview Questions:
 {chr(10).join([f"{idx}. {item}" for idx, item in enumerate(ai_feedback.get("interview_questions", []), start=1)])}
 
 Agent Trace:
@@ -1565,15 +1573,16 @@ Agent Trace:
         else:
             report = generate_nexthire_report(score, matched, missing)
 
-        st.text_area("Candidate Report Preview", report, height=420)
+        st.text_area("Hiring Report Preview", report, height=420)
         st.download_button(
-            "Download NextHire Candidate Report",
+            "Download NextHire Hiring Report",
             data=report,
-            file_name="nexthire_candidate_report.txt",
+            file_name="nexthire_hiring_report.txt",
             mime="text/plain",
-            use_container_width=True,
+            width="stretch",
         )
-    
+
+
 
 # =============================================================================
 # MAIN APP
