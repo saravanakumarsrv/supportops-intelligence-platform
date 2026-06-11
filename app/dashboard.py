@@ -60,6 +60,7 @@ st.set_page_config(
 DEFAULT_STATE = {
     "page": "Home",
     "support_demo_enabled": False,
+    "process_demo_enabled": False,
 }
 
 for key, value in DEFAULT_STATE.items():
@@ -73,6 +74,7 @@ PAGE_TO_SLUG = {
     "SupportOps Analyzer": "supportops",
     "CostOps Analyzer": "costops",
     "NextHire AI": "nexthire",
+    "ProcessOps Analyzer": "processops",
 }
 
 SLUG_TO_PAGE = {value: key for key, value in PAGE_TO_SLUG.items()}
@@ -110,6 +112,14 @@ def enable_support_demo() -> None:
     st.session_state["support_demo_enabled"] = True
     st.session_state["page"] = "SupportOps Analyzer"
     update_page_query("SupportOps Analyzer")
+    st.rerun()
+
+
+def enable_process_demo() -> None:
+    """Enable demo process data and stay inside ProcessOps."""
+    st.session_state["process_demo_enabled"] = True
+    st.session_state["page"] = "ProcessOps Analyzer"
+    update_page_query("ProcessOps Analyzer")
     st.rerun()
 
 
@@ -4150,6 +4160,217 @@ def load_css() -> None:
             }
         }
 
+
+        /* -----------------------------
+           Step 14: ProcessOps Analyzer
+           Business process bottleneck, rework, and automation opportunity analysis.
+        ----------------------------- */
+
+        .processops-story-card,
+        .processops-signal-card,
+        .processops-start-card,
+        .processops-report-card,
+        .processops-template-card {
+            padding: 1.2rem;
+            border-radius: var(--radius-lg);
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .processops-story-card {
+            background:
+                radial-gradient(circle at 88% 16%, rgba(61, 58, 140, 0.07), transparent 30%),
+                linear-gradient(135deg, #ffffff, #fafaf9);
+        }
+
+        .processops-title {
+            color: var(--color-text-primary) !important;
+            font-size: 1.15rem;
+            font-weight: 730;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.35rem;
+        }
+
+        .processops-copy {
+            color: var(--color-text-secondary) !important;
+            font-size: 0.9rem;
+            line-height: 1.58;
+        }
+
+        .processops-signal-list {
+            display: grid;
+            gap: 0.65rem;
+            margin-top: 0.85rem;
+        }
+
+        .processops-signal-row {
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 0.75rem;
+            align-items: start;
+            padding: 0.72rem;
+            border-radius: var(--radius-md);
+            background: var(--color-bg-soft);
+            border: 1px solid var(--color-border);
+        }
+
+        .processops-signal-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            background: var(--color-primary-subtle);
+            color: var(--color-primary) !important;
+            font-weight: 750;
+        }
+
+        .processops-signal-row b {
+            color: var(--color-text-primary) !important;
+            font-weight: 730;
+        }
+
+        .processops-signal-row p {
+            color: var(--color-text-secondary) !important;
+            margin: 0.15rem 0 0 0;
+            font-size: 0.82rem;
+            line-height: 1.42;
+        }
+
+        .processops-start-card {
+            margin: 1rem 0;
+            background:
+                radial-gradient(circle at 92% 12%, rgba(143, 175, 155, 0.07), transparent 32%),
+                #ffffff;
+        }
+
+        .processops-help-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.7rem;
+            margin-top: 0.9rem;
+        }
+
+        .processops-help-card {
+            padding: 0.85rem;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .processops-help-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: var(--color-primary-subtle);
+            color: var(--color-primary) !important;
+            font-weight: 750;
+            margin-bottom: 0.42rem;
+        }
+
+        .processops-help-title {
+            color: var(--color-text-primary) !important;
+            font-size: 0.82rem;
+            font-weight: 730;
+            margin-bottom: 0.15rem;
+        }
+
+        .processops-help-copy {
+            color: var(--color-text-secondary) !important;
+            font-size: 0.74rem;
+            line-height: 1.42;
+        }
+
+        .processops-data-banner {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .processops-data-title {
+            color: var(--color-text-primary) !important;
+            font-weight: 730;
+            margin-bottom: 0.12rem;
+        }
+
+        .processops-data-sub {
+            color: var(--color-text-secondary) !important;
+            font-size: 0.82rem;
+        }
+
+        .processops-data-pill {
+            padding: 0.42rem 0.65rem;
+            border-radius: var(--radius-full);
+            background: var(--color-primary-subtle);
+            color: var(--color-primary) !important;
+            border: 1px solid rgba(61, 58, 140, 0.14);
+            font-size: 0.78rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .processops-tab-note {
+            margin: 0.3rem 0 1rem 0;
+            padding: 0.85rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(61, 58, 140, 0.14);
+            background: var(--color-primary-subtle);
+            color: var(--color-text-secondary) !important;
+            font-size: 0.84rem;
+            line-height: 1.52;
+        }
+
+        .processops-opportunity-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .processops-opportunity-card {
+            padding: 1rem;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .processops-opportunity-label {
+            color: var(--color-text-secondary) !important;
+            font-size: 0.78rem;
+            margin-bottom: 0.28rem;
+        }
+
+        .processops-opportunity-value {
+            color: var(--color-text-primary) !important;
+            font-size: 1.25rem;
+            font-weight: 730;
+            letter-spacing: -0.03em;
+        }
+
+        .processops-opportunity-value.highlight {
+            color: var(--color-primary) !important;
+        }
+
+        @media (max-width: 980px) {
+            .processops-help-grid,
+            .processops-data-banner,
+            .processops-opportunity-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         </style>
         """,
         unsafe_allow_html=True,
@@ -4251,6 +4472,7 @@ def render_topbar() -> None:
   {nav_link("SupportOps", "SupportOps Analyzer")}
   {nav_link("CostOps", "CostOps Analyzer")}
   {nav_link("NextHire AI", "NextHire AI")}
+  {nav_link("ProcessOps", "ProcessOps Analyzer")}
 </div>
 """
     st.markdown(nav_html, unsafe_allow_html=True)
@@ -5033,13 +5255,13 @@ html, body {
 
     st.markdown('<div class="section-title">Choose an application</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-copy">Three focused modules. Each application has a clear workflow, a report output, and business value.</div>',
+        '<div class="section-copy">Four focused modules. Each application has a clear workflow, upload path, assistant, report output, and business value.</div>',
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3 = st.columns(3)
+    app_row1_col1, app_row1_col2 = st.columns(2, gap="large")
 
-    with col1:
+    with app_row1_col1:
         st.markdown(
             """
             <div class="app-card">
@@ -5065,7 +5287,7 @@ html, body {
         if st.button("Explore SupportOps →", key="home_support", width="stretch"):
             go_to("SupportOps Analyzer")
 
-    with col2:
+    with app_row1_col2:
         st.markdown(
             """
             <div class="app-card">
@@ -5091,7 +5313,9 @@ html, body {
         if st.button("Explore CostOps →", key="home_cost", width="stretch"):
             go_to("CostOps Analyzer")
 
-    with col3:
+    app_row2_col1, app_row2_col2 = st.columns(2, gap="large")
+
+    with app_row2_col1:
         st.markdown(
             """
             <div class="app-card">
@@ -5100,13 +5324,13 @@ html, body {
                     <div>
                         <div class="app-title">NextHire AI</div>
                         <div class="app-copy">
-                            Screen candidate profiles against role requirements, calculate fit,
+                            Upload or paste resumes and role requirements, calculate fit,
                             identify gaps, and create hiring reports.
                         </div>
                     </div>
                 </div>
                 <div class="value-list">
-                    • Reduce screening time<br>
+                    • Upload resume/JD files<br>
                     • Improve candidate review<br>
                     • Generate hiring briefings
                 </div>
@@ -5116,6 +5340,32 @@ html, body {
         )
         if st.button("Explore NextHire AI →", key="home_hire", width="stretch"):
             go_to("NextHire AI")
+
+    with app_row2_col2:
+        st.markdown(
+            """
+            <div class="app-card">
+                <div class="app-card-top">
+                    <div class="icon-box sage">🔁</div>
+                    <div>
+                        <div class="app-title">ProcessOps Analyzer</div>
+                        <div class="app-copy">
+                            Analyze process logs to find bottlenecks, approval delays,
+                            rework loops, owner workload, and automation opportunities.
+                        </div>
+                    </div>
+                </div>
+                <div class="value-list">
+                    • Find process bottlenecks<br>
+                    • Reduce approval delays<br>
+                    • Generate improvement reports
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Explore ProcessOps →", key="home_process", width="stretch"):
+            go_to("ProcessOps Analyzer")
 
     st.markdown(
         """
@@ -5141,6 +5391,13 @@ html, body {
                     <div>
                         <div class="impact-number">30–50%</div>
                         <div class="impact-label">manual screening time reduction</div>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">↻</div>
+                    <div>
+                        <div class="impact-number">Process</div>
+                        <div class="impact-label">bottleneck detection and automation ideas</div>
                     </div>
                 </div>
             </div>
@@ -7014,6 +7271,648 @@ Agent Trace:
         )
 
 
+
+
+# =============================================================================
+# PROCESSOPS ANALYZER HELPERS
+# =============================================================================
+PROCESSOPS_REQUIRED_COLUMNS = [
+    "case_id",
+    "process_name",
+    "step_name",
+    "owner",
+    "department",
+    "start_time",
+    "end_time",
+    "status",
+    "rework_flag",
+    "approval_required",
+    "automation_candidate",
+]
+
+
+def get_processops_template_df() -> pd.DataFrame:
+    """Return a downloadable ProcessOps CSV template."""
+    return pd.DataFrame(
+        [
+            {
+                "case_id": "PR-1001",
+                "process_name": "Purchase Request",
+                "step_name": "Manager Approval",
+                "owner": "Anita",
+                "department": "Operations",
+                "start_time": "2026-06-01 09:00:00",
+                "end_time": "2026-06-02 13:30:00",
+                "status": "Completed",
+                "rework_flag": "No",
+                "approval_required": "Yes",
+                "automation_candidate": "No",
+                "notes": "Waiting for approval queue",
+            },
+            {
+                "case_id": "PR-1002",
+                "process_name": "Expense Reimbursement",
+                "step_name": "Receipt Validation",
+                "owner": "Jeremiah",
+                "department": "Finance",
+                "start_time": "2026-06-01 10:15:00",
+                "end_time": "2026-06-01 18:45:00",
+                "status": "Reworked",
+                "rework_flag": "Yes",
+                "approval_required": "Yes",
+                "automation_candidate": "Yes",
+                "notes": "Manual data entry error",
+            },
+        ]
+    )
+
+
+@st.cache_data
+def load_processops_demo_data() -> pd.DataFrame:
+    """Create demo process log data."""
+    rows = [
+        ["PR-1001", "Purchase Request", "Request Intake", "Kim", "Operations", "2026-06-01 09:00", "2026-06-01 10:15", "Completed", "No", "No", "Yes", "Manual form intake"],
+        ["PR-1001", "Purchase Request", "Manager Approval", "Anita", "Operations", "2026-06-01 10:20", "2026-06-02 13:30", "Completed", "No", "Yes", "No", "Approval queue delay"],
+        ["PR-1001", "Purchase Request", "Finance Review", "Jeremiah", "Finance", "2026-06-02 14:00", "2026-06-03 11:30", "Completed", "No", "Yes", "Yes", "Manual validation"],
+        ["PR-1002", "Expense Reimbursement", "Expense Entry", "Maya", "Customer Service", "2026-06-01 08:30", "2026-06-01 09:10", "Completed", "No", "No", "Yes", "Manual receipt entry"],
+        ["PR-1002", "Expense Reimbursement", "Receipt Validation", "Jeremiah", "Finance", "2026-06-01 09:15", "2026-06-02 17:20", "Reworked", "Yes", "Yes", "Yes", "Incorrect receipt amount"],
+        ["PR-1002", "Expense Reimbursement", "Final Approval", "Anita", "Customer Service", "2026-06-03 09:00", "2026-06-04 15:00", "Completed", "No", "Yes", "No", "Manager unavailable"],
+        ["ON-2001", "Customer Onboarding", "Account Setup", "Ravi", "Implementation", "2026-06-01 11:00", "2026-06-01 15:00", "Completed", "No", "No", "Yes", "Repeat setup tasks"],
+        ["ON-2001", "Customer Onboarding", "Document Collection", "Kim", "Implementation", "2026-06-01 15:15", "2026-06-04 16:00", "Blocked", "No", "No", "No", "Waiting on customer documents"],
+        ["ON-2002", "Customer Onboarding", "Account Setup", "Ravi", "Implementation", "2026-06-02 09:00", "2026-06-02 12:30", "Completed", "No", "No", "Yes", "Standard setup"],
+        ["ON-2002", "Customer Onboarding", "Training Scheduling", "Maya", "Implementation", "2026-06-02 13:00", "2026-06-05 10:00", "Delayed", "No", "No", "Yes", "Manual scheduling coordination"],
+        ["HR-3001", "Hiring Approval", "Role Intake", "Anita", "HR", "2026-06-01 09:00", "2026-06-01 11:00", "Completed", "No", "No", "Yes", "Standard intake"],
+        ["HR-3001", "Hiring Approval", "Budget Approval", "Jeremiah", "Finance", "2026-06-01 11:30", "2026-06-04 12:00", "Delayed", "No", "Yes", "No", "Budget owner review delay"],
+        ["HR-3001", "Hiring Approval", "Recruiter Assignment", "Maya", "HR", "2026-06-04 13:00", "2026-06-04 16:30", "Completed", "No", "No", "Yes", "Manual routing"],
+    ]
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "case_id",
+            "process_name",
+            "step_name",
+            "owner",
+            "department",
+            "start_time",
+            "end_time",
+            "status",
+            "rework_flag",
+            "approval_required",
+            "automation_candidate",
+            "notes",
+        ],
+    )
+
+
+def clean_processops_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean and enrich process log data."""
+    df = df.copy()
+    df.columns = [str(col).strip().lower() for col in df.columns]
+
+    df["start_time"] = pd.to_datetime(df["start_time"], errors="coerce")
+    df["end_time"] = pd.to_datetime(df["end_time"], errors="coerce")
+    df["cycle_hours"] = (df["end_time"] - df["start_time"]).dt.total_seconds() / 3600
+    df["cycle_hours"] = df["cycle_hours"].fillna(0).clip(lower=0)
+
+    for col in ["rework_flag", "approval_required", "automation_candidate"]:
+        df[col] = df[col].astype(str).str.strip().str.title()
+
+    df["is_rework"] = df["rework_flag"].isin(["Yes", "True", "1"])
+    df["needs_approval"] = df["approval_required"].isin(["Yes", "True", "1"])
+    df["is_automation_candidate"] = df["automation_candidate"].isin(["Yes", "True", "1"])
+    df["is_delayed_or_blocked"] = df["status"].astype(str).str.lower().isin(["delayed", "blocked", "reworked"])
+
+    df["bottleneck_score"] = (
+        (df["cycle_hours"] * 2)
+        + (df["is_rework"].astype(int) * 20)
+        + (df["needs_approval"].astype(int) * 10)
+        + (df["is_delayed_or_blocked"].astype(int) * 18)
+        + (df["is_automation_candidate"].astype(int) * 6)
+    ).round(1)
+
+    df["risk_level"] = pd.cut(
+        df["bottleneck_score"],
+        bins=[-1, 18, 45, 10**9],
+        labels=["Low", "Medium", "High"],
+    ).astype(str)
+
+    return df
+
+
+def validate_processops_columns(df: pd.DataFrame) -> dict:
+    """Validate ProcessOps columns."""
+    cols = set([str(col).strip().lower() for col in df.columns])
+    missing = [col for col in PROCESSOPS_REQUIRED_COLUMNS if col not in cols]
+    return {"passed": len(missing) == 0, "missing_columns": missing}
+
+
+def calculate_processops_kpis(df: pd.DataFrame) -> dict:
+    """Calculate ProcessOps KPIs."""
+    total_cases = df["case_id"].nunique()
+    total_steps = len(df)
+    avg_cycle = df["cycle_hours"].mean() if total_steps else 0
+    rework_rate = df["is_rework"].mean() * 100 if total_steps else 0
+    approval_delay = df[df["needs_approval"]]["cycle_hours"].mean() if df["needs_approval"].any() else 0
+    automation_opps = int(df["is_automation_candidate"].sum())
+    high_risk_steps = int((df["risk_level"] == "High").sum())
+
+    return {
+        "total_cases": total_cases,
+        "total_steps": total_steps,
+        "avg_cycle_hours": round(avg_cycle, 1),
+        "rework_rate": round(rework_rate, 1),
+        "approval_delay_hours": round(approval_delay, 1),
+        "automation_opps": automation_opps,
+        "high_risk_steps": high_risk_steps,
+    }
+
+
+def process_step_summary(df: pd.DataFrame) -> pd.DataFrame:
+    """Summarize process steps."""
+    return (
+        df.groupby(["process_name", "step_name"], as_index=False)
+        .agg(
+            total_steps=("case_id", "count"),
+            avg_cycle_hours=("cycle_hours", "mean"),
+            rework_count=("is_rework", "sum"),
+            delayed_or_blocked=("is_delayed_or_blocked", "sum"),
+            automation_opportunities=("is_automation_candidate", "sum"),
+            avg_bottleneck_score=("bottleneck_score", "mean"),
+        )
+        .round(1)
+        .sort_values("avg_bottleneck_score", ascending=False)
+    )
+
+
+def process_owner_summary(df: pd.DataFrame) -> pd.DataFrame:
+    """Summarize workload by owner."""
+    return (
+        df.groupby(["owner", "department"], as_index=False)
+        .agg(
+            assigned_steps=("case_id", "count"),
+            avg_cycle_hours=("cycle_hours", "mean"),
+            rework_count=("is_rework", "sum"),
+            high_risk_steps=("risk_level", lambda x: int((x == "High").sum())),
+        )
+        .round(1)
+        .sort_values("assigned_steps", ascending=False)
+    )
+
+
+def process_quality_suggestions(df: pd.DataFrame, column_check: dict) -> list[str]:
+    """Generate ProcessOps upload fix suggestions."""
+    suggestions = []
+
+    if not column_check.get("passed", False):
+        suggestions.append(f"Add missing required columns: {', '.join(column_check.get('missing_columns', []))}.")
+
+    invalid_start = df["start_time"].isna().sum() if "start_time" in df.columns else 0
+    invalid_end = df["end_time"].isna().sum() if "end_time" in df.columns else 0
+    if invalid_start or invalid_end:
+        suggestions.append("Fix invalid start_time or end_time values. Use YYYY-MM-DD HH:MM format.")
+
+    if "case_id" in df.columns and df["case_id"].isna().sum() > 0:
+        suggestions.append("Fill missing case_id values so each process instance can be tracked end-to-end.")
+
+    if not suggestions:
+        suggestions.append("Process data looks analysis-ready. Review bottlenecks, approval delays, and automation opportunities.")
+
+    return suggestions
+
+
+def answer_process_question(question: str, df: pd.DataFrame) -> str:
+    """Simple rule-based assistant for ProcessOps data."""
+    q = question.lower().strip()
+    if not q:
+        return "Ask a question such as: Which step is the biggest bottleneck?"
+
+    kpis = calculate_processops_kpis(df)
+    steps = process_step_summary(df)
+    owners = process_owner_summary(df)
+
+    top_step = steps.iloc[0]
+    top_owner = owners.iloc[0]
+
+    if "bottleneck" in q or "slow" in q or "delay" in q:
+        return (
+            f"<b>Biggest bottleneck:</b> <b>{top_step['step_name']}</b> in "
+            f"<b>{top_step['process_name']}</b> has the highest average bottleneck score "
+            f"({top_step['avg_bottleneck_score']}). Average cycle time is "
+            f"<b>{top_step['avg_cycle_hours']} hours</b>."
+        )
+
+    if "approval" in q:
+        return (
+            f"<b>Approval delay:</b> Steps requiring approval average "
+            f"<b>{kpis['approval_delay_hours']} hours</b>. Review manager approval and finance review steps first."
+        )
+
+    if "rework" in q:
+        return (
+            f"<b>Rework:</b> Rework rate is <b>{kpis['rework_rate']}%</b>. "
+            "Look for manual entry, missing documentation, and validation steps with repeated corrections."
+        )
+
+    if "automation" in q or "automate" in q:
+        return (
+            f"<b>Automation opportunity:</b> There are <b>{kpis['automation_opps']}</b> automation candidate steps. "
+            "Start with repetitive intake, validation, routing, and scheduling tasks."
+        )
+
+    if "owner" in q or "workload" in q:
+        return (
+            f"<b>Owner workload:</b> <b>{top_owner['owner']}</b> has the highest assigned step count "
+            f"({top_owner['assigned_steps']}). Review workload balance and handoff delays."
+        )
+
+    return (
+        f"<b>Process summary:</b> {kpis['total_cases']} cases, {kpis['total_steps']} steps, "
+        f"average cycle time {kpis['avg_cycle_hours']} hours, rework rate {kpis['rework_rate']}%, "
+        f"and {kpis['high_risk_steps']} high-risk steps."
+    )
+
+
+def generate_processops_report(df: pd.DataFrame) -> str:
+    """Generate ProcessOps executive report."""
+    kpis = calculate_processops_kpis(df)
+    steps = process_step_summary(df).head(5)
+    owners = process_owner_summary(df).head(5)
+
+    return f"""OpsIntel AI - ProcessOps Executive Improvement Report
+
+Executive Summary
+The process dataset includes {kpis['total_cases']} cases and {kpis['total_steps']} workflow steps.
+Average cycle time is {kpis['avg_cycle_hours']} hours, rework rate is {kpis['rework_rate']}%, and there are {kpis['high_risk_steps']} high-risk process steps.
+
+Key Process Risks
+- Average approval step delay: {kpis['approval_delay_hours']} hours
+- Automation candidate steps: {kpis['automation_opps']}
+- High-risk steps: {kpis['high_risk_steps']}
+
+Top Bottleneck Steps
+{chr(10).join([f"- {row.process_name} / {row.step_name}: {row.avg_cycle_hours} hrs avg, score {row.avg_bottleneck_score}" for row in steps.itertuples()])}
+
+Owner Workload Hotspots
+{chr(10).join([f"- {row.owner} ({row.department}): {row.assigned_steps} steps, {row.high_risk_steps} high-risk" for row in owners.itertuples()])}
+
+Recommended Improvement Actions
+1. Review the top bottleneck step and identify why cycle time is high.
+2. Reduce unnecessary approval layers for low-risk requests.
+3. Automate repetitive intake, validation, routing, and scheduling steps.
+4. Create a standard operating procedure for reworked steps.
+5. Add weekly monitoring for cycle time, rework, and blocked cases.
+
+Business Impact
+Improving process flow can reduce waiting time, manual rework, approval delays, and operational frustration.
+
+Note
+This is a portfolio demo report. Human review is recommended before business decisions.
+"""
+
+
+def render_processops_page() -> None:
+    """Render ProcessOps Analyzer."""
+    render_module_header(
+        "APPLICATION 4",
+        "ProcessOps Analyzer",
+        "Upload process logs to identify bottlenecks, approval delays, rework, manual handoffs, and automation opportunities.",
+    )
+
+    intro_left, intro_right = st.columns([1.04, 0.96], gap="large")
+    with intro_left:
+        st.markdown(
+            """
+<div class="processops-story-card">
+  <div class="processops-title">Turn messy process logs into improvement actions</div>
+  <div class="processops-copy">
+    ProcessOps Analyzer helps business analysts and operations teams find where work gets stuck,
+    where approvals slow down, and which manual steps are ready for automation.
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    with intro_right:
+        st.markdown(
+            """
+<div class="processops-signal-card">
+  <div class="processops-title">What ProcessOps detects</div>
+  <div class="processops-signal-list">
+    <div class="processops-signal-row">
+      <div class="processops-signal-icon">01</div>
+      <div>
+        <b>Bottlenecks</b>
+        <p>Find slow process steps and blocked handoffs.</p>
+      </div>
+    </div>
+    <div class="processops-signal-row">
+      <div class="processops-signal-icon">02</div>
+      <div>
+        <b>Rework</b>
+        <p>Detect repeated corrections, validation failures, and manual mistakes.</p>
+      </div>
+    </div>
+    <div class="processops-signal-row">
+      <div class="processops-signal-icon">03</div>
+      <div>
+        <b>Automation opportunities</b>
+        <p>Prioritize repetitive steps that can be automated or simplified.</p>
+      </div>
+    </div>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        """
+<div class="processops-start-card">
+  <div class="processops-title">Analyze a business process</div>
+  <div class="processops-copy">
+    Upload a process log CSV or try the demo dataset. This works for approval flows, onboarding,
+    expense reimbursement, purchase requests, hiring approvals, and other repeated business processes.
+  </div>
+  <div class="processops-help-grid">
+    <div class="processops-help-card">
+      <div class="processops-help-num">1</div>
+      <div class="processops-help-title">Map the process</div>
+      <div class="processops-help-copy">Track case IDs, steps, owners, and departments.</div>
+    </div>
+    <div class="processops-help-card">
+      <div class="processops-help-num">2</div>
+      <div class="processops-help-title">Find delays</div>
+      <div class="processops-help-copy">Compare cycle time across steps and approvals.</div>
+    </div>
+    <div class="processops-help-card">
+      <div class="processops-help-num">3</div>
+      <div class="processops-help-title">Spot rework</div>
+      <div class="processops-help-copy">Flag repeated corrections and manual errors.</div>
+    </div>
+    <div class="processops-help-card">
+      <div class="processops-help-num">4</div>
+      <div class="processops-help-title">Improve flow</div>
+      <div class="processops-help-copy">Generate SOP, automation, and action recommendations.</div>
+    </div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+<div class="processops-template-card">
+  <div class="processops-title">Need a process log template?</div>
+  <div class="processops-copy">
+    Download the template, fill in your process steps, and upload it for bottleneck analysis.
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.download_button(
+        "Download ProcessOps CSV Template",
+        data=df_to_csv_bytes(get_processops_template_df()),
+        file_name="processops_process_log_template.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+
+    upload_col, demo_col = st.columns([1.25, 0.75], gap="large")
+    with upload_col:
+        uploaded_file = st.file_uploader(
+            "Upload process log CSV",
+            type=["csv"],
+            help="Upload a process log CSV with case, step, owner, start time, end time, and status fields.",
+            key="processops_upload",
+        )
+
+    with demo_col:
+        if st.button("Try demo process data", width="stretch"):
+            enable_process_demo()
+        if st.button("Clear ProcessOps data", width="stretch"):
+            st.session_state["process_demo_enabled"] = False
+            st.rerun()
+
+    if uploaded_file is not None:
+        raw_df = pd.read_csv(uploaded_file)
+        data_source = f"Uploaded file: {uploaded_file.name}"
+    elif st.session_state.get("process_demo_enabled", False):
+        raw_df = load_processops_demo_data()
+        data_source = "Demo process dataset"
+    else:
+        st.markdown(
+            """
+<div class="processops-start-card">
+  <div class="processops-title">Open the ProcessOps workflow</div>
+  <div class="processops-copy">
+    Upload a process log CSV or click <b>Try demo process data</b> to open the full dashboard with KPIs, bottlenecks,
+    automation opportunities, ask-data assistant, and executive improvement report.
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        return
+
+    column_check = validate_processops_columns(raw_df)
+    if not column_check["passed"]:
+        st.error(f"Missing required columns: {column_check['missing_columns']}")
+        st.download_button(
+            "Download Correct ProcessOps Template",
+            data=df_to_csv_bytes(get_processops_template_df()),
+            file_name="processops_process_log_template.csv",
+            mime="text/csv",
+            width="stretch",
+        )
+        return
+
+    df = clean_processops_data(raw_df)
+    kpis = calculate_processops_kpis(df)
+
+    st.markdown(
+        f"""
+<div class="processops-data-banner">
+  <div>
+    <div class="processops-data-title">Process data loaded</div>
+    <div class="processops-data-sub">{data_source}</div>
+  </div>
+  <div class="processops-data-pill">{kpis['total_cases']:,} cases</div>
+  <div class="processops-data-pill">{kpis['total_steps']:,} steps</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    tabs = st.tabs(["Overview", "Bottlenecks", "Automation", "Ask Data", "Report", "Raw Data"])
+
+    with tabs[0]:
+        st.subheader("Process Health Overview")
+        st.markdown(
+            """
+<div class="processops-tab-note">
+  A business analyst view of cycle time, approval delay, rework, automation opportunities, and high-risk process steps.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Cases", f"{kpis['total_cases']:,}")
+        c2.metric("Avg Cycle Time", f"{kpis['avg_cycle_hours']} hrs")
+        c3.metric("Rework Rate", f"{kpis['rework_rate']}%")
+        c4.metric("High-Risk Steps", f"{kpis['high_risk_steps']:,}")
+
+        c5, c6 = st.columns(2)
+        c5.metric("Approval Delay Avg", f"{kpis['approval_delay_hours']} hrs")
+        c6.metric("Automation Candidates", f"{kpis['automation_opps']:,}")
+
+        process_summary = (
+            df.groupby("process_name", as_index=False)
+            .agg(avg_cycle_hours=("cycle_hours", "mean"), steps=("case_id", "count"))
+            .round(1)
+        )
+        fig = px.bar(
+            process_summary,
+            x="process_name",
+            y="avg_cycle_hours",
+            title="Average Cycle Time by Process",
+            text="avg_cycle_hours",
+            color_discrete_sequence=["#3d3a8c"],
+        )
+        render_plotly_chart(fig)
+
+    with tabs[1]:
+        st.subheader("Bottleneck Analysis")
+        st.markdown(
+            """
+<div class="processops-tab-note">
+  Find process steps with high cycle time, rework, delayed status, approval pressure, and high bottleneck scores.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        step_summary = process_step_summary(df)
+        fig = px.bar(
+            step_summary.head(10),
+            x="step_name",
+            y="avg_bottleneck_score",
+            color="process_name",
+            title="Top Bottleneck Steps",
+            text="avg_bottleneck_score",
+            color_discrete_sequence=["#3d3a8c", "#8faf9b", "#9a7435", "#9b4a4a"],
+        )
+        render_plotly_chart(fig)
+
+        st.dataframe(step_summary, width="stretch")
+
+    with tabs[2]:
+        st.subheader("Automation & Rework Opportunities")
+        st.markdown(
+            """
+<div class="processops-tab-note">
+  Prioritize repetitive, manual, reworked, and delayed steps for SOP improvement or lightweight automation.
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        automation_df = df[df["is_automation_candidate"]].copy()
+        rework_df = df[df["is_rework"]].copy()
+
+        st.markdown(
+            f"""
+<div class="processops-opportunity-grid">
+  <div class="processops-opportunity-card">
+    <div class="processops-opportunity-label">Automation candidates</div>
+    <div class="processops-opportunity-value highlight">{len(automation_df):,}</div>
+  </div>
+  <div class="processops-opportunity-card">
+    <div class="processops-opportunity-label">Rework steps</div>
+    <div class="processops-opportunity-value">{len(rework_df):,}</div>
+  </div>
+  <div class="processops-opportunity-card">
+    <div class="processops-opportunity-label">Delayed / blocked / reworked</div>
+    <div class="processops-opportunity-value">{int(df['is_delayed_or_blocked'].sum()):,}</div>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        owner_summary = process_owner_summary(df)
+        fig = px.bar(
+            owner_summary,
+            x="owner",
+            y="assigned_steps",
+            color="department",
+            title="Workload by Process Owner",
+            text="assigned_steps",
+            color_discrete_sequence=["#3d3a8c", "#8faf9b", "#9a7435", "#9b4a4a"],
+        )
+        render_plotly_chart(fig)
+
+        st.subheader("Automation Candidate Steps")
+        st.dataframe(automation_df, width="stretch")
+
+    with tabs[3]:
+        st.subheader("Ask Your Process Data")
+        st.markdown(
+            """
+<div class="ask-card">
+  <div class="ask-card-title">Ask OpsIntel about this process dataset</div>
+  <div class="ask-card-copy">
+    Ask about bottlenecks, approval delays, rework, automation opportunities, owners, or workload.
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        question = st.text_input(
+            "Ask a process improvement question",
+            placeholder="Example: Which step is the biggest bottleneck?",
+            key="processops_ask_question",
+        )
+        if question:
+            answer = answer_process_question(question, df)
+            st.markdown(f'<div class="answer-card">{answer}</div>', unsafe_allow_html=True)
+
+    with tabs[4]:
+        st.markdown(
+            """
+<div class="processops-report-card">
+  <div class="processops-title">Download ProcessOps Improvement Report</div>
+  <div class="processops-copy">
+    Export a business analyst style report with bottlenecks, owner workload, rework, automation opportunities, and recommended actions.
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        suggestions = process_quality_suggestions(df, column_check)
+        st.markdown('<div class="fix-card"><div class="fix-title">Data Quality & Process Fix Suggestions</div><ul class="fix-list">', unsafe_allow_html=True)
+        for suggestion in suggestions:
+            st.markdown(f"<li>{suggestion}</li>", unsafe_allow_html=True)
+        st.markdown("</ul></div>", unsafe_allow_html=True)
+
+        report = generate_processops_report(df)
+        st.text_area("ProcessOps Report Preview", report, height=420)
+        st.download_button(
+            "Download ProcessOps Report",
+            data=report,
+            file_name="processops_improvement_report.txt",
+            mime="text/plain",
+            width="stretch",
+        )
+
+    with tabs[5]:
+        st.subheader("Raw Process Log Data")
+        st.dataframe(df, width="stretch")
 
 # =============================================================================
 # MAIN APP
