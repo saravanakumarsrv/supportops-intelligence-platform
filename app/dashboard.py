@@ -57,7 +57,7 @@ MAX_UPLOAD_SIZE_MB = 5
 MAX_UPLOAD_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
 MAX_CSV_ROWS = 10000
 MAX_TEXT_INPUT_CHARS = 12000
-GEMINI_MODEL_DEFAULT = "gemini-1.5-flash"
+GEMINI_MODEL_DEFAULT = "gemini-3.5-flash"
 
 EMAIL_RE = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 PHONE_RE = re.compile(r"(\+?\d[\d\s().-]{7,}\d)")
@@ -110,6 +110,13 @@ def safe_html(raw_html: str) -> None:
         if line.strip()
     )
     st.markdown(cleaned, unsafe_allow_html=True)
+def get_secret_value(name: str, default: str | None = None) -> str | None:
+    try:
+        if name in st.secrets:
+            return st.secrets[name]
+    except Exception:
+        pass
+    return os.getenv(name, default)
 
 # =============================================================================
 # SAFETY / PII HELPERS
@@ -685,8 +692,8 @@ h1, h2, h3, h4 { color: var(--text-primary) !important; }
 # =============================================================================
 
 def render_topbar() -> None:
-    gemini_available = bool(os.getenv("GEMINI_API_KEY")) and genai is not None
-    model_name = os.getenv("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
+    gemini_available = bool(get_secret_value("GEMINI_API_KEY")) and genai is not None
+    model_name = get_secret_value("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
     dot_class = "" if gemini_available else " off"
     ai_label = f"<span>{model_name}</span>" if gemini_available else "<span>Fallback mode</span>"
 
@@ -761,8 +768,8 @@ def render_module_header(kicker: str, title: str, copy: str) -> None:
 
 
 def render_ai_status() -> None:
-    gemini_available = bool(os.getenv("GEMINI_API_KEY")) and genai is not None
-    model_name = os.getenv("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
+    gemini_available = bool(get_secret_value("GEMINI_API_KEY")) and genai is not None
+    model_name = get_secret_value("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
     dot_class = "" if gemini_available else " off"
     status_label = f"<span>{model_name} active</span>" if gemini_available else "<span>Rule-based fallback</span>"
 
@@ -795,11 +802,12 @@ def dark_fig(fig) -> go.Figure:
 # =============================================================================
 
 def call_gemini(prompt: str, fallback_answer: str) -> str:
-    if not os.getenv("GEMINI_API_KEY") or genai is None:
+    if not get_secret_value("GEMINI_API_KEY") or genai is None:
         return fallback_answer
     try:
-        client = genai.Client()
-        model = os.getenv("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
+        api_key = get_secret_value("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key)
+        model = get_secret_value("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
         response = client.models.generate_content(model=model, contents=prompt)
         return response.text.strip() if response.text else fallback_answer
     except Exception:
@@ -1029,7 +1037,7 @@ def generate_talentops_ai_feedback(resume_text, jd_text, score, matched, missing
         "agent_trace": ["Generated fallback keyword-based TalentOps feedback."],
     }
 
-    if not os.getenv("GEMINI_API_KEY"):
+    if not get_secret_value("GEMINI_API_KEY"):
         fallback["agent_trace"].append("GEMINI_API_KEY not set. Fallback mode active.")
         return fallback
 
@@ -1068,14 +1076,18 @@ Job description:
 </untrusted_job_description>
 """
     try:
-        client = genai.Client()
-        model = os.getenv("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
+        api_key = get_secret_value("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key)
+        model = get_secret_value("GEMINI_MODEL", GEMINI_MODEL_DEFAULT)
         response = client.models.generate_content(model=model, contents=prompt)
         result = validate_nexthire_result(_extract_json_response(response.text), fallback)
         result["agent_trace"].append(f"Gemini feedback completed using {model}.")
         return result
-    except Exception:
-        fallback["agent_trace"].append("Gemini failed. Fallback used.")
+    except Exception as error:
+        fallback["agent_trace"].append(
+            f"Gemini failed: {type(error).__name__}: {str(error)[:250]}"
+        )
+        fallback["agent_trace"].append("Fallback used.")
         return fallback
 
 
@@ -1580,7 +1592,7 @@ def render_talentops_page() -> None:
     )
 
     if st.button("Generate Gemini Resume Coaching", use_container_width=True):
-        if os.getenv("GEMINI_API_KEY") and not ai_consent:
+        if get_secret_value("GEMINI_API_KEY") and not ai_consent:
             st.warning("Enable Gemini consent checkbox before sending text to the AI service.")
         else:
             with st.spinner("Gemini is analyzing the resume and job description..."):
